@@ -1,0 +1,11 @@
+  {
+    "name": "Pimp my Wolt",
+    "version": "1.0",
+    "description": "Add all noname people to join your meal",
+    "manifest_version": 2,
+    "content_scripts": [{
+        "css": ["styles.css"],
+        "js": ["plugin.js"],
+        "matches": ["https://wolt.com/*"]
+    }]
+  }
