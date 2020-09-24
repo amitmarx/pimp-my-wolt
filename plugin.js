@@ -1,13 +1,28 @@
 (function () {
-  const isInInviteGroupPage = () =>
-    Boolean(getElementWithText("h3", "Suggested guests"));
   const buttonSettings = {
     id: "invite-group-button-extension",
     text: "Invite Noname",
   };
+  const orderButtonHookSettings = {
+    saveOrdersAttribute: "save-orders",
+  };
+
+  const isInInviteGroupPage = () =>
+    Boolean(getElementWithText("h3", "Suggested guests"));
   const isInviteGroupButtonExists = () =>
     Boolean(document.getElementById(buttonSettings.id));
+  const isOrderButtonExists = () =>
+    Boolean(document.querySelector('[data-test-id="SendOrderButton"]'));
 
+  const isOrderButtonUpdated = () => {
+    const orderButton = document.querySelector(
+      '[data-test-id="SendOrderButton"]'
+    );
+    return (
+      orderButton.getAttribute(orderButtonHookSettings.saveOrdersAttribute) ===
+      "true"
+    );
+  };
   function getElementWithText(element, text) {
     const xpath = `//${element}[.//*[contains(text(), "${text}")]]`;
     return document
@@ -38,6 +53,45 @@
     const responseJson = await response.json();
     return responseJson;
   }
+
+  function getGuestsOrders() {
+    const orderTable = document.querySelector(
+      "[class^=Tabs__root] [class^=Tabs__content]"
+    );
+    const priceToNumber = (price) => Number(price.replace(/[^0-9.-]+/g, ""));
+    return Array.from(orderTable.querySelectorAll("li") || []).map((item) => {
+      return {
+        name: item.querySelector('[class*="GuestItem__listName"] span')
+          .innerText,
+        price: priceToNumber(
+          item.querySelector('[class*="GuestItem__price"]').innerText
+        ),
+      };
+    });
+  }
+
+  function updateOrderButtonToSaveGuestsOrders() {
+    const sendOrderButton = document.querySelector(
+      '[data-test-id="SendOrderButton"]'
+    );
+    sendOrderButton.onclick = () => {
+      const guestsOrders = getGuestsOrders();
+      chrome.storage.local.set({ guestsOrders });
+    };
+    sendOrderButton.setAttribute(
+      orderButtonHookSettings.saveOrdersAttribute,
+      "true"
+    );
+  }
+
+  function handleCibusPayment() {
+    chrome.storage.local.get("guestsOrders", (guestsOrders) => {
+      for (guestOrder of guestsOrders) {
+        getElementWithText("label", guestOrder.name).click();
+      }
+    });
+  }
+
   setInterval(() => {
     if (!isInviteGroupButtonExists() && isInInviteGroupPage()) {
       const btn = getBtn();
@@ -46,6 +100,9 @@
         "Suggested guests"
       );
       suggestedGuestsElement.appendChild(btn);
+    }
+    if (isOrderButtonExists() && !isOrderButtonUpdated()) {
+      updateOrderButtonToSaveGuestsOrders();
     }
   }, 500);
 })();
