@@ -6,17 +6,34 @@
     "permissions": [
       "storage"
     ],
+    "options_ui": {
+      "page": "set-team-page.html",
+      "open_in_tab": false
+    },
     "content_scripts": [
       {
         "css": [
           "styles.css"
         ],
         "js": [
-          "plugin.js"
+          "pimp-my-wolt.js"
         ],
         "matches": [
           "https://wolt.com/*"
         ]
+      },
+      {
+        "css": [
+          "styles.css"
+        ],
+        "js": [
+          "pimp-my-cibus.js"
+        ],
+        "matches": [
+          "https://www.mysodexo.co.il/*"
+        ],
+        "all_frames": true,
+        "match_about_blank": true
       }
     ]
   }

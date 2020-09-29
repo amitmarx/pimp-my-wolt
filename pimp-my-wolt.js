@@ -3,6 +3,7 @@
     id: "invite-group-button-extension",
     text: "Invite Noname",
   };
+
   const orderButtonHookSettings = {
     saveOrdersAttribute: "save-orders",
   };
@@ -30,10 +31,11 @@
       .iterateNext();
   }
 
-  function getBtn() {
+  async function getBtn() {
     const btn = document.createElement("button");
     btn.setAttribute("id", buttonSettings.id);
-    const btnText = document.createTextNode(buttonSettings.text);
+    const teamName = await getTeamName();
+    const btnText = document.createTextNode(`Invite ${teamName}`);
     btn.appendChild(btnText);
     btn.onclick = () => inviteAllGuests();
     return btn;
@@ -46,19 +48,37 @@
     }
   }
 
+  async function getTeamName() {
+    return new Promise((res) => {
+      chrome.storage.sync.get("teamName", ({ teamName }) => res(teamName));
+    });
+  }
+
   async function getAllGuests() {
+    const teamName = await getTeamName();
     const response = await fetch(
-      "https://noname-employees.free.beeceptor.com/"
+      `https://amitmarx.wixsite.com/pimp-my-wolt/_functions/list_group_members/${teamName}`
     );
     const responseJson = await response.json();
-    return responseJson;
+    return responseJson.items;
+  }
+
+  function getDeliveryPrice() {
+    const amountWithCurrency = getElementWithText(
+      "dl",
+      "Delivery"
+    )?.querySelector("dd")?.innerText;
+    return priceToNumber(amountWithCurrency ?? "");
+  }
+
+  function priceToNumber(price) {
+    return Number(price.replace(/[^0-9.-]+/g, ""));
   }
 
   function getGuestsOrders() {
     const orderTable = document.querySelector(
       "[class^=Tabs__root] [class^=Tabs__content]"
     );
-    const priceToNumber = (price) => Number(price.replace(/[^0-9.-]+/g, ""));
     return Array.from(orderTable.querySelectorAll("li") || []).map((item) => {
       return {
         name: item.querySelector('[class*="GuestItem__listName"] span')
@@ -76,7 +96,8 @@
     );
     sendOrderButton.onclick = () => {
       const guestsOrders = getGuestsOrders();
-      chrome.storage.local.set({ guestsOrders });
+      const deliveryPrice = getDeliveryPrice();
+      chrome.storage.local.set({ guestsOrders, deliveryPrice });
     };
     sendOrderButton.setAttribute(
       orderButtonHookSettings.saveOrdersAttribute,
@@ -84,22 +105,15 @@
     );
   }
 
-  function handleCibusPayment() {
-    chrome.storage.local.get("guestsOrders", (guestsOrders) => {
-      for (guestOrder of guestsOrders) {
-        getElementWithText("label", guestOrder.name).click();
-      }
-    });
+  async function addInviteGroupBtton() {
+    const btn = await getBtn();
+    const suggestedGuestsElement = getElementWithText("h3", "Suggested guests");
+    suggestedGuestsElement.appendChild(btn);
   }
 
   setInterval(() => {
     if (!isInviteGroupButtonExists() && isInInviteGroupPage()) {
-      const btn = getBtn();
-      const suggestedGuestsElement = getElementWithText(
-        "h3",
-        "Suggested guests"
-      );
-      suggestedGuestsElement.appendChild(btn);
+      addInviteGroupBtton();
     }
     if (isOrderButtonExists() && !isOrderButtonUpdated()) {
       updateOrderButtonToSaveGuestsOrders();
