@@ -1,13 +1,22 @@
 (function () {
-  const splitPaymentButtonSettings = {
-    id: "split-payment-button-extension",
-    text: "Split Payment",
+  const paymentButtonSettings = {
+    settledAttribute: "settled",
   };
 
-  const isPaymentButtonExists = () =>
-    Boolean(document.getElementById("pnlBtnPay"));
-  const isSplitPaymentButtonExists = () =>
-    Boolean(document.getElementById(splitPaymentButtonSettings.id));
+  const getPaymentButton = () => document.getElementById("pnlBtnPay");
+  const isPaymentButtonExists = () => Boolean(getPaymentButton());
+  const isPaymentSettled = () => {
+    const paymentButton = getPaymentButton();
+    const attribute = paymentButton?.getAttribute(
+      paymentButtonSettings.settledAttribute
+    );
+    return attribute === "true";
+  };
+
+  const setPaymentSettled = () => {
+    const paymentButton = getPaymentButton();
+    paymentButton?.setAttribute(paymentButtonSettings.settledAttribute, "true");
+  };
 
   function getElementWithText(element, text) {
     const xpath = `//${element}[.//*[contains(text(), "${text}")]]`;
@@ -86,30 +95,15 @@
     });
   }
 
-  function getSplitPaymentButton() {
-    const btn = document.createElement("button");
-    btn.setAttribute("id", splitPaymentButtonSettings.id);
-    btn.setAttribute("type", "button");
-    const btnText = document.createTextNode(splitPaymentButtonSettings.text);
-    btn.appendChild(btnText);
-    btn.onclick = () => handleCibusPayment();
-    return btn;
-  }
-
-  function addSplitPaymentButton() {
-    const btn = getSplitPaymentButton();
-    const paymentPanel = document.getElementById("pnlBtnPay");
-    paymentPanel.appendChild(btn);
-  }
-
   function openSplitPaymentTable() {
     document.querySelector('label[for="cbSplit"]').click();
   }
 
   setInterval(() => {
-    if (isPaymentButtonExists() && !isSplitPaymentButtonExists()) {
+    if (isPaymentButtonExists() && !isPaymentSettled()) {
+      setPaymentSettled();
       openSplitPaymentTable();
-      addSplitPaymentButton();
+      handleCibusPayment();
     }
   }, 500);
 })();
