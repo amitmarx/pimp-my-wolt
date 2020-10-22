@@ -44,7 +44,7 @@
   async function inviteAllGuests() {
     const guests = await getAllGuests();
     for (guest of guests) {
-      getElementWithText("li", guest)?.querySelector("button")?.click();
+      getElementWithText("li", guest.woltName)?.querySelector("button")?.click();
     }
   }
 
