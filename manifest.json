@@ -1,22 +1,22 @@
   {
     "name": "Pimp my Wolt",
     "version": "1.0",
-    "description": "Add all noname people to join your meal",
+    "description": "Boost wolt up 🚀",
     "manifest_version": 2,
     "permissions": [
       "storage"
     ],
     "options_ui": {
-      "page": "set-team-page.html",
+      "page": "/src/set-team-page.html",
       "open_in_tab": false
     },
     "content_scripts": [
       {
         "css": [
-          "styles.css"
+          "/src/styles.css"
         ],
         "js": [
-          "pimp-my-wolt.js"
+          "/src/pimp-my-wolt.js"
         ],
         "matches": [
           "https://wolt.com/*"
@@ -24,10 +24,10 @@
       },
       {
         "css": [
-          "styles.css"
+          "/src/styles.css"
         ],
         "js": [
-          "pimp-my-cibus.js"
+          "/src/pimp-my-cibus.js"
         ],
         "matches": [
           "https://www.mysodexo.co.il/*"
@@ -35,5 +35,11 @@
         "all_frames": true,
         "match_about_blank": true
       }
-    ]
+    ],
+    "icons": {
+      "16": "/assets/icons/pimp-my-wolt-icon-16.png",
+      "24": "/assets/icons/pimp-my-wolt-icon-24.png",
+      "48": "/assets/icons/pimp-my-wolt-icon-48.png",
+      "128": "/assets/icons/pimp-my-wolt-icon-128.png"
+    }
   }
