@@ -8,8 +8,14 @@
     saveOrdersAttribute: "save-orders",
   };
 
+  const isHebrewWolt = window.location.href.toLowerCase().includes("com/he/");
+  const suggestedGuestsText = isHebrewWolt
+    ? "אנשים שאולי ירצו להזמין איתך"
+    : "Suggested guests";
+  const deliveryText = isHebrewWolt ? "משלוח" : "Delivery";
+
   const isInInviteGroupPage = () =>
-    Boolean(getElementWithText("h3", "Suggested guests"));
+    Boolean(getElementWithText("h3", suggestedGuestsText));
   const isInviteGroupButtonExists = () =>
     Boolean(document.getElementById(buttonSettings.id));
   const isOrderButtonExists = () =>
@@ -35,7 +41,8 @@
     const btn = document.createElement("button");
     btn.setAttribute("id", buttonSettings.id);
     const teamName = await getTeamName();
-    const btnText = document.createTextNode(`Invite ${teamName}`);
+    const text = isHebrewWolt ? `הזמן את ${teamName}` : `Invite ${teamName}`;
+    const btnText = document.createTextNode(text);
     btn.appendChild(btnText);
     btn.onclick = () => inviteAllGuests();
     return btn;
@@ -44,7 +51,9 @@
   async function inviteAllGuests() {
     const guests = await getAllGuests();
     for (guest of guests) {
-      getElementWithText("li", guest.woltName)?.querySelector("button")?.click();
+      getElementWithText("li", guest.woltName)
+        ?.querySelector("button")
+        ?.click();
     }
   }
 
@@ -66,7 +75,7 @@
   function getDeliveryPrice() {
     const amountWithCurrency = getElementWithText(
       "dl",
-      "Delivery"
+      deliveryText
     )?.querySelector("dd")?.innerText;
     return priceToNumber(amountWithCurrency ?? "");
   }
@@ -107,7 +116,10 @@
 
   async function addInviteGroupBtton() {
     const btn = await getBtn();
-    const suggestedGuestsElement = getElementWithText("h3", "Suggested guests");
+    const suggestedGuestsElement = getElementWithText(
+      "h3",
+      suggestedGuestsText
+    );
     suggestedGuestsElement.appendChild(btn);
   }
 
