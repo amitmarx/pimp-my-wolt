@@ -88,15 +88,22 @@
     const orderTable = document.querySelector(
       "[class^=Tabs__root] [class^=Tabs__content]"
     );
-    return Array.from(orderTable.querySelectorAll("li") || []).map((item) => {
-      return {
-        name: item.querySelector('[class*="GuestItem__listName"] span')
-          .innerText,
-        price: priceToNumber(
-          item.querySelector('[class*="GuestItem__price"]').innerText
-        ),
-      };
-    });
+    const guestsLineItems = Array.from(orderTable.querySelectorAll("li") || []);
+
+    return guestsLineItems
+      .map((item) => {
+        const name = item.querySelector('[class*="GuestItem__listName"] span')
+          ?.innerText;
+        const price = priceToNumber(
+          item.querySelector('[class*="GuestItem__price"]')?.innerText
+        );
+
+        return {
+          name,
+          price,
+        };
+      })
+      .filter((guest) => guest.name && guest.price);
   }
 
   function updateOrderButtonToSaveGuestsOrders() {
