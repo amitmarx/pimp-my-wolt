@@ -81,7 +81,9 @@
   }
 
   function priceToNumber(price) {
-    return Number(price.replace(/[^0-9.-]+/g, ""));
+    if (typeof price !== "string") return 0;
+    const maybeNumber = Number(price.replace(/[^0-9.-]+/g, ""));
+    return isNaN(maybeNumber) ? 0 : maybeNumber;
   }
 
   function getGuestsOrders() {
