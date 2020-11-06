@@ -41,7 +41,11 @@
     const btn = document.createElement("button");
     btn.setAttribute("id", buttonSettings.id);
     const teamName = await getTeamName();
-    const text = isHebrewWolt ? `הזמן את ${teamName}` : `Invite ${teamName}`;
+    const text = !teamName
+      ? ""
+      : isHebrewWolt
+      ? `הזמן את ${teamName}`
+      : `Invite ${teamName}`;
     const btnText = document.createTextNode(text);
     btn.appendChild(btnText);
     btn.onclick = () => inviteAllGuests();
@@ -139,5 +143,5 @@
     if (isOrderButtonExists() && !isOrderButtonUpdated()) {
       updateOrderButtonToSaveGuestsOrders();
     }
-  }, 500);
+  }, 200);
 })();

@@ -105,5 +105,5 @@
       openSplitPaymentTable();
       handleCibusPayment();
     }
-  }, 500);
+  }, 200);
 })();
