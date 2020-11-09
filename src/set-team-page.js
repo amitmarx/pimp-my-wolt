@@ -6,5 +6,5 @@ input.addEventListener("change", () => {
 });
 
 chrome.storage.sync.get("teamName", ({ teamName }) => {
-  input.value = teamName;
+  input.value = teamName || "";
 });
