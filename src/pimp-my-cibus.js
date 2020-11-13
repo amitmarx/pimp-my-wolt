@@ -43,8 +43,11 @@
   async function handleCibusPayment() {
     const guests = await getAllGuests();
     chrome.storage.local.get(
-      ["deliveryPrice", "guestsOrders"],
-      ({ deliveryPrice, guestsOrders }) => {
+      ["deliveryPrice", "guestsOrders", "orderTimestamp"],
+      ({ deliveryPrice, guestsOrders, orderTimestamp }) => {
+        if (orderTimestamp + 30 * 1000 < Date.now()) {
+          return;
+        }
         const guestDeliveryShare = deliveryPrice / guestsOrders.length;
         const guestDebts = guestsOrders.map((guestOrder) => {
           const cibusName = guests.find(

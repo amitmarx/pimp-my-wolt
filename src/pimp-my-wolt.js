@@ -119,7 +119,8 @@
     sendOrderButton.onclick = () => {
       const guestsOrders = getGuestsOrders();
       const deliveryPrice = getDeliveryPrice();
-      chrome.storage.local.set({ guestsOrders, deliveryPrice });
+      const orderTimestamp = Date.now();
+      chrome.storage.local.set({ guestsOrders, deliveryPrice, orderTimestamp });
     };
     sendOrderButton.setAttribute(
       orderButtonHookSettings.saveOrdersAttribute,
