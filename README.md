@@ -1,18 +1,51 @@
-# Pimp my Wolt
+# Readme
 
-# Install
+# What is this project about
 
-1. Download `pimp-my-wolt` [extension code](https://github.com/amitmarx/pimp-my-wolt/archive/master.zip) and extract the zip file.
-2. Go to Chrome extension settings: (browse to: chrome://extensions/).
-3. Switch `Developer Mode` on and click on `Load unpacked`.
-4. Select the extracted folder from step 1.
-5. You should now see `Pimp my Wolt` on your extensions, click on `Details` and then click `Extension options`.
-6. Define your group's name.
-7. Add members to [your group](#manage-group-members).
+My team uses Wolt everyday for our lunch order.  
+We use Wolt's shared order and split the payment on Cibus.  
+After few weeks of this practice, I thought it might be cool if I could invite all of my team at once   
+rather than the "one by one" option currently available on Wolt.  
+Then I've noticed a bigger pain for my team which is the manual payment split,  
+so I decided to create this Chrome extension to solve these everyday hassles.
 
-# Manage group members
+# Features
 
-Group members are managed in a crud endpoint.
+## Invite all group members
+
+![PR/gifs/invite-all.gif](PR/gifs/invite-all.gif)
+
+## Split shared order payment
+
+![PR/gifs/split-payment.gif](PR/gifs/split-payment.gif)
+
+# Installation Guide
+
+1. Browse to the extension page on [Google Web Store](https://chrome.google.com/webstore/detail/pimp-my-wolt/edfemdoibbcbmkojfdeldnllcbnpmfld) and click `Add to Chrome`.
+2. Set your group name on the extension's options (browse to chrome://extensions/?options=edfemdoibbcbmkojfdeldnllcbnpmfld).
+For more details about groups, [please see here]().
+3. [Make sure]() your group is properly configured. 
+
+# What is Group and What is it used for
+
+Group is a set of people you typically share Wolt's orders with.
+Each group member represented an object containing its Wolt name and Cibus name.
+Formally:
+
+```tsx
+type Group = GroupMember[]
+
+interface GroupMember {
+	woltName: String;
+	cibusName: String;
+}
+```
+
+This mapping between Wolt name and Cibus name allows the extension to remember who ordered what on Wolt, and then "charge" the right amount the right person on Cibus.  
+
+# Manage Group Members
+
+Group members are managed in a crud service.
 In the following sections I'll use bash to interact with this endpoint, but you may chose your favourite alternative. 
 
 ## Add new group member
@@ -46,4 +79,4 @@ curl -X DELETE \
 curl https://amitmarx.wixsite.com/pimp-my-wolt/_functions/list_group_members/{GROUP_NAME}
 ```
 
-- GROUP_NAME is your team's chosen name, just pick one 😎
+- GROUP_NAME is your team's chosen name.
