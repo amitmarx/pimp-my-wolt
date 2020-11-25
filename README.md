@@ -22,14 +22,16 @@ so I decided to create this Chrome extension to solve these everyday hassles.
 # Installation Guide
 
 1. Browse to the extension page on [Google Web Store](https://chrome.google.com/webstore/detail/pimp-my-wolt/edfemdoibbcbmkojfdeldnllcbnpmfld) and click `Add to Chrome`.
-2. Set your group name on the extension's options (browse to chrome://extensions/?options=edfemdoibbcbmkojfdeldnllcbnpmfld).
-For more details about groups, [please see here]().
-3. [Make sure]() your group is properly configured. 
+2. Set your group name on the extension's options.  
+In order to enter to the options page, browse to:  
+chrome://extensions/?options=edfemdoibbcbmkojfdeldnllcbnpmfld  
+For more details about groups, [please see here](#What-is-Group-and-What-is-it-used-for).
+3. [Make sure](#List-group-members) your group is properly configured. 
 
 # What is Group and What is it used for
 
-Group is a set of people you typically share Wolt's orders with.
-Each group member represented an object containing its Wolt name and Cibus name.
+Group is a set of people you typically share Wolt's orders with.  
+Each group member represented by an object containing its Wolt name and Cibus name.  
 Formally:
 
 ```tsx
@@ -45,8 +47,9 @@ This mapping between Wolt name and Cibus name allows the extension to remember w
 
 # Manage Group Members
 
-Group members are managed in a crud service.
-In the following sections I'll use bash to interact with this endpoint, but you may chose your favourite alternative. 
+Group members are managed via a crud service.  
+In the following demonstration I'll use bash to interact with this service,  
+but you may chose your favourite alternative. 
 
 ## Add new group member
 
@@ -60,9 +63,12 @@ curl -X POST \
 }'
 ```
 
-- WOLT_NAME may be found here: [https://wolt.com/en/me](https://wolt.com/en/me)
-- CIBUS_NAME may be found here: [https://www.mysodexo.co.il/new_my/new_my_details.aspx](https://www.mysodexo.co.il/new_my/new_my_details.aspx)
-- GROUP_NAME is created on the fly, first group member will initiate the group.
+- GROUP_NAME is your team's chosen name.  
+(Groups are created on the fly, first group member will initiate the group).
+- WOLT_NAME is your display name on Wolt.  
+It may be found here: [https://wolt.com/en/me](https://wolt.com/en/me).
+- CIBUS_NAME is your display name on Cibus.  
+It may be found here: [https://www.mysodexo.co.il/new_my/new_my_details.aspx](https://www.mysodexo.co.il/new_my/new_my_details.aspx).
 
 ## Delete group member
 
@@ -71,7 +77,7 @@ curl -X DELETE \
   https://amitmarx.wixsite.com/pimp-my-wolt/_functions/group_member/{MEMBER_ID}
 ```
 
-- MEMBER_ID may be found from the list group members endpoint
+- MEMBER_ID may be found from the [list group members](#list-group-members) endpoint.
 
 ## List group members
 
