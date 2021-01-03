@@ -16,6 +16,7 @@
           "/src/styles.css"
         ],
         "js": [
+          "/src/group-manager.js",
           "/src/pimp-my-wolt.js"
         ],
         "matches": [
@@ -27,6 +28,7 @@
           "/src/styles.css"
         ],
         "js": [
+          "/src/group-manager.js",
           "/src/pimp-my-cibus.js"
         ],
         "matches": [

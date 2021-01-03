@@ -1,4 +1,8 @@
+const groupManager = window.pimpMyWolt.groupManager;
+
 (function () {
+  const allGuests = groupManager.getAllGuests();
+
   const buttonSettings = {
     id: "invite-group-button-extension",
     text: "Invite Noname",
@@ -40,7 +44,7 @@
   async function getBtn() {
     const btn = document.createElement("button");
     btn.setAttribute("id", buttonSettings.id);
-    const teamName = await getTeamName();
+    const teamName = await groupManager.getTeamName();
     const text = !teamName
       ? ""
       : isHebrewWolt
@@ -53,27 +57,12 @@
   }
 
   async function inviteAllGuests() {
-    const guests = await getAllGuests();
+    const guests = await allGuests;
     for (guest of guests) {
       getElementWithText("li", guest.woltName)
         ?.querySelector("button")
         ?.click();
     }
-  }
-
-  async function getTeamName() {
-    return new Promise((res) => {
-      chrome.storage.sync.get("teamName", ({ teamName }) => res(teamName));
-    });
-  }
-
-  async function getAllGuests() {
-    const teamName = await getTeamName();
-    const response = await fetch(
-      `https://amitmarx.wixsite.com/pimp-my-wolt/_functions/list_group_members/${teamName}`
-    );
-    const responseJson = await response.json();
-    return responseJson.items;
   }
 
   function getDeliveryPrice() {

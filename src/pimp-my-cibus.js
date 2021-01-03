@@ -1,4 +1,8 @@
+const groupManager = window.pimpMyWolt.groupManager;
+
 (function () {
+  const allGuests = groupManager.getAllGuests();
+
   const paymentButtonSettings = {
     settledAttribute: "settled",
   };
@@ -25,23 +29,8 @@
       .iterateNext();
   }
 
-  async function getTeamName() {
-    return new Promise((res) => {
-      chrome.storage.sync.get("teamName", ({ teamName }) => res(teamName));
-    });
-  }
-
-  async function getAllGuests() {
-    const teamName = await getTeamName();
-    const response = await fetch(
-      `https://amitmarx.wixsite.com/pimp-my-wolt/_functions/list_group_members/${teamName}`
-    );
-    const responseJson = await response.json();
-    return responseJson.items;
-  }
-
   async function handleCibusPayment() {
-    const guests = await getAllGuests();
+    const guests = await allGuests;
     chrome.storage.local.get(
       ["deliveryPrice", "guestsOrders", "orderTimestamp"],
       ({ deliveryPrice, guestsOrders, orderTimestamp }) => {
