@@ -17,6 +17,7 @@
         ],
         "js": [
           "/src/group-manager.js",
+          "/src/bi-logger.js",
           "/src/pimp-my-wolt.js"
         ],
         "matches": [
@@ -29,6 +30,7 @@
         ],
         "js": [
           "/src/group-manager.js",
+          "/src/bi-logger.js",
           "/src/pimp-my-cibus.js"
         ],
         "matches": [

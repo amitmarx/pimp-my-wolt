@@ -1,6 +1,6 @@
-const groupManager = window.pimpMyWolt.groupManager;
-
 (function () {
+  const { groupManager, biLogger } = window.pimpMyWolt;
+  
   const allGuests = groupManager.getAllGuests();
 
   const buttonSettings = {
@@ -52,17 +52,32 @@ const groupManager = window.pimpMyWolt.groupManager;
       : `Invite ${teamName}`;
     const btnText = document.createTextNode(text);
     btn.appendChild(btnText);
-    btn.onclick = () => inviteAllGuests();
+    btn.onclick = async () => {
+      const { invitedGuests, notInvitedGuests } = await inviteAllGuests();
+      biLogger.logEvent('invite_all_group',{
+        invited_guests: invitedGuests,
+        not_invited_guests: notInvitedGuests,
+      });
+    };
     return btn;
   }
 
   async function inviteAllGuests() {
     const guests = await allGuests;
+    const invitedGuests = [];
+    const notInvitedGuests = [];
     for (guest of guests) {
-      getElementWithText("li", guest.woltName)
-        ?.querySelector("button")
-        ?.click();
+      const guestName = guest.woltName;
+      const inviteButton = getElementWithText("li", guestName)?.querySelector(
+        "button"
+      );
+      inviteButton?.click();
+      (inviteButton ? invitedGuests : notInvitedGuests).push(guestName);
     }
+    return {
+      invitedGuests,
+      notInvitedGuests,
+    };
   }
 
   function getDeliveryPrice() {
