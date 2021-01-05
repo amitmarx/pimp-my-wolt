@@ -1,6 +1,5 @@
-const groupManager = window.pimpMyWolt.groupManager;
-
 (function () {
+  const { groupManager, biLogger } = window.pimpMyWolt;
   const allGuests = groupManager.getAllGuests();
 
   const paymentButtonSettings = {
@@ -33,7 +32,7 @@ const groupManager = window.pimpMyWolt.groupManager;
     const guests = await allGuests;
     chrome.storage.local.get(
       ["deliveryPrice", "guestsOrders", "orderTimestamp"],
-      ({ deliveryPrice, guestsOrders, orderTimestamp }) => {
+      async ({ deliveryPrice, guestsOrders, orderTimestamp }) => {
         if (orderTimestamp + 30 * 1000 < Date.now()) {
           return;
         }
@@ -43,16 +42,40 @@ const groupManager = window.pimpMyWolt.groupManager;
             (guest) => guest.woltName === guestOrder.name
           )?.cibusName;
           return {
+            woltName: guestOrder.name,
             cibusName,
             debt: guestOrder.price + guestDeliveryShare,
           };
         });
-        setGuestsDebts(guestDebts);
+        const settledGuests = await setGuestsDebts(guestDebts);
+        publishSplitPaymentEvent({
+          settledGuests,
+          guestsOrders,
+          deliveryPrice,
+        });
       }
     );
   }
 
+  async function publishSplitPaymentEvent({
+    settledGuests,
+    guestsOrders,
+    deliveryPrice,
+  }) {
+    const currentCibusUser = document.querySelector("#lblMyName").innerText;
+    const currentUser =
+      (await allGuests).find((guest) => guest.cibusName === currentCibusUser)
+        ?.woltName || currentCibusUser;
+    biLogger.logEvent("split_payment", {
+      userName: currentUser,
+      settledGuests,
+      guestsOrders,
+      deliveryPrice,
+    });
+  }
+
   async function setGuestsDebts(guestDebts) {
+    const settledGuests = [];
     for (guestDebt of guestDebts) {
       getElementWithText("label", guestDebt.cibusName)?.click();
     }
@@ -70,8 +93,10 @@ const groupManager = window.pimpMyWolt.groupManager;
             cancelable: true,
           })
         );
+        settledGuests.push({ name: guestDebt.woltName, price: guestDebt.debt });
       }
     }
+    return settledGuests;
   }
 
   function waitForValue(f, attempts = 100) {

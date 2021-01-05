@@ -1,6 +1,6 @@
 (function () {
   const { groupManager, biLogger } = window.pimpMyWolt;
-  
+
   const allGuests = groupManager.getAllGuests();
 
   const buttonSettings = {
@@ -54,9 +54,9 @@
     btn.appendChild(btnText);
     btn.onclick = async () => {
       const { invitedGuests, notInvitedGuests } = await inviteAllGuests();
-      biLogger.logEvent('invite_all_group',{
-        invited_guests: invitedGuests,
-        not_invited_guests: notInvitedGuests,
+      biLogger.logEvent("invite_all_group", {
+        invitedGuests,
+        notInvitedGuests,
       });
     };
     return btn;
@@ -98,7 +98,9 @@
     const orderTable = document.querySelector(
       "[class^=Tabs__root] [class^=Tabs__content]"
     );
-    const guestsLineItems = Array.from(orderTable.querySelectorAll("li") || []);
+    const guestsLineItems = Array.from(
+      orderTable?.querySelectorAll("li") || []
+    );
 
     return guestsLineItems
       .map((item) => {
