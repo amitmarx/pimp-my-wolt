@@ -31,12 +31,14 @@
   async function handleCibusPayment() {
     const guests = await allGuests;
     chrome.storage.local.get(
-      ["deliveryPrice", "guestsOrders", "orderTimestamp"],
-      async ({ deliveryPrice, guestsOrders, orderTimestamp }) => {
+      ["deliveryPrice", "guestsOrders", "orderTimestamp", "restaurant"],
+      async ({ deliveryPrice, guestsOrders, orderTimestamp, restaurant }) => {
         if (orderTimestamp + 30 * 1000 < Date.now()) {
           return;
         }
-        const guestDeliveryShare = deliveryPrice / guestsOrders.length;
+        const guestDeliveryShare = Number(
+          (deliveryPrice / guestsOrders.length).toFixed(2)
+        );
         const guestDebts = guestsOrders.map((guestOrder) => {
           const cibusName = guests.find(
             (guest) => guest.woltName === guestOrder.name
@@ -49,6 +51,7 @@
         });
         const settledGuests = await setGuestsDebts(guestDebts);
         publishSplitPaymentEvent({
+          restaurant,
           settledGuests,
           guestsOrders,
           deliveryPrice,
@@ -58,6 +61,7 @@
   }
 
   async function publishSplitPaymentEvent({
+    restaurant,
     settledGuests,
     guestsOrders,
     deliveryPrice,
@@ -67,6 +71,7 @@
       (await allGuests).find((guest) => guest.cibusName === currentCibusUser)
         ?.woltName || currentCibusUser;
     biLogger.logEvent("split_payment", {
+      restaurant,
       userName: currentUser,
       settledGuests,
       guestsOrders,

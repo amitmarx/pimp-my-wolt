@@ -55,6 +55,7 @@
     btn.onclick = async () => {
       const { invitedGuests, notInvitedGuests } = await inviteAllGuests();
       biLogger.logEvent("invite_all_group", {
+        restaurant: getRestuarant(),
         invitedGuests,
         notInvitedGuests,
       });
@@ -78,6 +79,13 @@
       invitedGuests,
       notInvitedGuests,
     };
+  }
+
+  function getRestuarant() {
+    const location = document?.location?.pathname;
+    const regex = /restaurant\/(.*)\//gm;
+    const restaurant = location?.matchAll(regex)?.next()?.value?.[1];
+    return restaurant;
   }
 
   function getDeliveryPrice() {
@@ -125,8 +133,9 @@
     sendOrderButton.onclick = () => {
       const guestsOrders = getGuestsOrders();
       const deliveryPrice = getDeliveryPrice();
+      const restaurant = getRestuarant();
       const orderTimestamp = Date.now();
-      chrome.storage.local.set({ guestsOrders, deliveryPrice, orderTimestamp });
+      chrome.storage.local.set({ guestsOrders, deliveryPrice, orderTimestamp, restaurant });
     };
     sendOrderButton.setAttribute(
       orderButtonHookSettings.saveOrdersAttribute,
