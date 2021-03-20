@@ -13,9 +13,11 @@
     "content_scripts": [
       {
         "css": [
-          "/src/styles.css"
+          "/src/styles.css",
+          "/src/ext/micromodal.css"
         ],
         "js": [
+          "/src/ext/micromodal.min.js",
           "/src/group-manager.js",
           "/src/bi-logger.js",
           "/src/pimp-my-wolt.js"

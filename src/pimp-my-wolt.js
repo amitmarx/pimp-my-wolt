@@ -1,6 +1,6 @@
 (function () {
   const { groupManager, biLogger } = window.pimpMyWolt;
-
+  const {MicroModal} = window
   const allGuests = groupManager.getAllGuests();
 
   const buttonSettings = {
@@ -41,18 +41,12 @@
       .iterateNext();
   }
 
-  async function getBtn() {
-    const btn = document.createElement("button");
-    btn.setAttribute("id", buttonSettings.id);
-    const teamName = await groupManager.getTeamName();
-    const text = !teamName
-      ? ""
-      : isHebrewWolt
+  function getInviteAllBtn(teamName){
+    const text = isHebrewWolt
       ? `הזמן את ${teamName}`
       : `Invite ${teamName}`;
-    const btnText = document.createTextNode(text);
-    btn.appendChild(btnText);
-    btn.onclick = async () => {
+
+    const onclick = async () => {
       const { invitedGuests, notInvitedGuests } = await inviteAllGuests();
       biLogger.logEvent("invite_all_group", {
         restaurant: getRestuarant(),
@@ -60,6 +54,25 @@
         notInvitedGuests,
       });
     };
+      return {
+          text,
+          onclick
+      }
+  }
+
+  function getSetupYourTeamBtnProps(){
+      const text = isHebrewWolt ? 'הוסף קבוצה' : 'Add team'
+      const onclick = () => MicroModal.show('modal-1')
+      return {text, onclick}
+  }
+
+  async function getBtn() {
+    const btn = document.createElement("button");
+    btn.setAttribute("id", buttonSettings.id);
+    const teamName = await groupManager.getTeamName();
+      const {text, onclick} = teamName ? getInviteAllBtn(teamName) : getSetupYourTeamBtnProps()
+    btn.appendChild(document.createTextNode(text))
+    btn.onclick = onclick;
     return btn;
   }
 
@@ -143,7 +156,7 @@
     );
   }
 
-  async function addInviteGroupBtton() {
+  async function addInviteGroupButton() {
     const btn = await getBtn();
     const suggestedGuestsElement = getElementWithText(
       "h3",
@@ -152,9 +165,42 @@
     suggestedGuestsElement.appendChild(btn);
   }
 
+  function addSetGroupModal() {
+    const modalHtml = ` <div class="modal micromodal-slide" id="modal-1" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+      <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+        <header class="modal__header">
+          <h2 class="modal__title" id="modal-1-title">
+            Set Group Name
+          </h2>
+          <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
+        </header>
+        <main class="modal__content" id="modal-1-content">
+          <p>
+            <input id="pimp_my_wolt__name"/>
+          </p>
+        </main>
+        <footer class="modal__footer">
+          <button class="modal__btn modal__btn-primary" id="set_team_name_btn">Continue</button>
+          <button class="modal__btn" data-micromodal-close aria-label="Close this dialog window">Close</button>
+        </footer>
+      </div>
+    </div>
+  </div>`
+    document.querySelector('body').insertAdjacentHTML('beforeend', modalHtml)
+      const onclick = () =>{
+          const teamName = document.getElementById("pimp_my_wolt__name").value;
+          chrome.storage.sync.set({ teamName });
+          MicroModal.close()
+          document.getElementById(buttonSettings.id).remove()
+      }
+      document.getElementById('set_team_name_btn').onclick = onclick
+  }
+
   setInterval(() => {
     if (!isInviteGroupButtonExists() && isInInviteGroupPage()) {
-      addInviteGroupBtton();
+      addSetGroupModal()
+      addInviteGroupButton();
     }
     if (isOrderButtonExists() && !isOrderButtonUpdated()) {
       updateOrderButtonToSaveGuestsOrders();
