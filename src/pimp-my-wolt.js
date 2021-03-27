@@ -1,14 +1,19 @@
 (function () {
   const { groupManager, biLogger } = window.pimpMyWolt;
   const {MicroModal} = window
-  const allGuests = groupManager.getAllGuests();
+
+  let allGuests;
+  function refreshAllGuests(){
+    allGuests = groupManager.getAllGuests();
+  }
+  refreshAllGuests()
+  let newMemberWoltName = ''
+  let retireMemberWoltId = ''
 
   const buttonSettings = {
     id: "invite-group-button-pimpMyWolt",
     text: "Invite Noname",
   };
-
-  // const add
 
   const orderButtonHookSettings = {
     saveOrdersAttribute: "save-orders",
@@ -225,34 +230,76 @@
         </header>
         <main class="modal__content" id="modal-member-setup-content">
           <p>
-            <input id="pimp_my_wolt__name"/>
+            <input id="pimp_my_wolt__cibus_name"/>
           </p>
         </main>
         <footer class="modal__footer">
-          <button class="modal__btn modal__btn-primary" id="set_team_name_btn">Continue</button>
+          <button class="modal__btn modal__btn-primary" id="pimp_my_wolt_add_new_member">Continue</button>
           <button class="modal__btn" data-micromodal-close aria-label="Close this dialog window">Close</button>
         </footer>
       </div>
     </div>
   </div>`
       document.querySelector('body').insertAdjacentHTML('beforeend', modalHtml)
-      // const onclick = () => {
-      //   const teamName = document.getElementById("pimp_my_wolt__name").value;
-      //   chrome.storage.sync.set({teamName});
-      //   MicroModal.close()
-      //   document.getElementById(buttonSettings.id).remove()
-      // }
-      // document.getElementById('set_team_name_btn').onclick = onclick
+      const onclick = async () => {
+        const newMemberCibusName = document.getElementById("pimp_my_wolt__cibus_name").value;
+        const teamName = await groupManager.getTeamName();
+        await fetch('https://amitmarx.wixsite.com/pimp-my-wolt/_functions/group_member/'+teamName, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({cibusName: newMemberCibusName, woltName: newMemberWoltName})
+        });
+        refreshAllGuests()
+        MicroModal.close()
+        // document.getElementById(buttonSettings.id).remove()
+      }
+      document.getElementById('pimp_my_wolt_add_new_member').onclick = onclick
     }
   }
 
-  function addRemoveButton(li) {
-    debugger
+  function addMemberRemovalModal() {
+    if(!document.querySelector('#modal-member-removal')) {
+      const modalHtml = ` <div class="modal micromodal-slide" id="modal-member-removal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+      <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-member-removal-title">
+        <header class="modal__header">
+          <h2 class="modal__title" id="modal-member-removal-title">
+            Are you sure you want to remove from group?
+          </h2>
+          <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
+        </header>
+        <main class="modal__content" id="modal-member-setup-content">
+        </main>
+        <footer class="modal__footer">
+          <button class="modal__btn modal__btn-primary" id="pimp_my_wolt_remove_member">Continue</button>
+          <button class="modal__btn" data-micromodal-close aria-label="Close this dialog window">Close</button>
+        </footer>
+      </div>
+    </div>
+  </div>`
+      document.querySelector('body').insertAdjacentHTML('beforeend', modalHtml)
+      const onclick = async () => {
+        await fetch('https://amitmarx.wixsite.com/pimp-my-wolt/_functions/group_member/'+retireMemberWoltId, {
+          method: 'DELETE'
+        });
+        refreshAllGuests()
+        MicroModal.close()
+      }
+      document.getElementById('pimp_my_wolt_remove_member').onclick = onclick
+    }
+  }
+
+  function addRemoveButton(li, memberId) {
     const div = document.createElement("div")
     div.setAttribute('id', 'pimpMyWolt_remove_from_group')
-    const minusButton = document.createElement("button");
-    minusButton.textContent ="-";
-    div.appendChild(minusButton)
+    div.setAttribute('class', 'action-button-pimpMyWolt')
+    div.textContent ="-";
+    div.onclick = () => {
+      retireMemberWoltId = memberId
+      MicroModal.show('modal-member-removal')
+    }
     li.prepend(div)
   }
 
@@ -264,8 +311,10 @@
     const div = document.createElement("div")
     div.setAttribute('id', 'pimpMyWolt_add_to_group')
     div.setAttribute('class', 'action-button-pimpMyWolt')
+    const woltName= li?.querySelector('span')?.innerText
     div.textContent ="+";
     div.onclick = ()=>{
+      newMemberWoltName = woltName
       MicroModal.show('modal-member-setup')
     }
     li.prepend(div)
@@ -283,12 +332,13 @@
     for (const itemInList of itemsInList){
       itemInList.classList.add("participant-pimpMyWolt")
       const woltName = itemInList.querySelector('span').textContent
-      const isInGroup = guests.find(g=> g.woltName === woltName)
+      const member = guests.find(g=> g.woltName === woltName)
+      const isInGroup = Boolean(member)
       const isAddButtonExists = Boolean(itemInList.querySelector('#pimpMyWolt_add_to_group'))
       const isRemoveButtonExists = Boolean(itemInList.querySelector('#pimpMyWolt_remove_from_group'))
       if(isInGroup){
         isAddButtonExists && removeAddButton(itemInList)
-        !isRemoveButtonExists && addRemoveButton(itemInList)
+        !isRemoveButtonExists && addRemoveButton(itemInList, member.id)
       } else {
         !isAddButtonExists && addAddButton(itemInList)
         isRemoveButtonExists && removeRemoveButton(itemInList)
@@ -310,6 +360,7 @@
 
     if(isParticipantTableExists()) {
       addMemberSetupModal()
+      addMemberRemovalModal()
       addPlusNextToNewMembers()
     }
   }, 200);
