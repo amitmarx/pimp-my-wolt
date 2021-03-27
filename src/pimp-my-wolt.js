@@ -4,9 +4,11 @@
   const allGuests = groupManager.getAllGuests();
 
   const buttonSettings = {
-    id: "invite-group-button-extension",
+    id: "invite-group-button-pimpMyWolt",
     text: "Invite Noname",
   };
+
+  // const add
 
   const orderButtonHookSettings = {
     saveOrdersAttribute: "save-orders",
@@ -16,10 +18,13 @@
   const suggestedGuestsText = isHebrewWolt
     ? "אנשים שאולי ירצו להזמין איתך"
     : "Suggested guests";
+  const readyText = isHebrewWolt ? 'מוכן' : 'Ready'
   const deliveryText = isHebrewWolt ? "משלוח" : "Delivery";
 
   const isInInviteGroupPage = () =>
     Boolean(getElementWithText("h3", suggestedGuestsText));
+  const isParticipantTableExists = () =>
+      Boolean(getElementWithText("li", readyText));
   const isInviteGroupButtonExists = () =>
     Boolean(document.getElementById(buttonSettings.id));
   const isOrderButtonExists = () =>
@@ -34,11 +39,21 @@
       "true"
     );
   };
-  function getElementWithText(element, text) {
+  function getElementsWithText(element, text) {
+    const result = []
     const xpath = `//${element}[.//*[contains(text(), "${text}")]]`;
-    return document
-      .evaluate(xpath, document, null, XPathResult.ANY_TYPE, null)
-      .iterateNext();
+    const generator = document
+        .evaluate(xpath, document, null, XPathResult.ANY_TYPE, null)
+    let current = generator.iterateNext()
+    while (current){
+      result.push(current)
+      current = generator.iterateNext()
+    }
+    return result
+  }
+
+  function getElementWithText(element, text) {
+    return getElementsWithText(element, text)[0]
   }
 
   function getInviteAllBtn(teamName){
@@ -62,7 +77,7 @@
 
   function getSetupYourTeamBtnProps(){
       const text = isHebrewWolt ? 'הוסף קבוצה' : 'Add team'
-      const onclick = () => MicroModal.show('modal-1')
+      const onclick = () => MicroModal.show('modal-add-group')
       return {text, onclick}
   }
 
@@ -166,16 +181,16 @@
   }
 
   function addSetGroupModal() {
-    const modalHtml = ` <div class="modal micromodal-slide" id="modal-1" aria-hidden="true">
+    const modalHtml = ` <div class="modal micromodal-slide" id="modal-add-group" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1" data-micromodal-close>
-      <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+      <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-add-group-title">
         <header class="modal__header">
-          <h2 class="modal__title" id="modal-1-title">
+          <h2 class="modal__title" id="modal-add-group-title">
             Set Group Name
           </h2>
           <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
         </header>
-        <main class="modal__content" id="modal-1-content">
+        <main class="modal__content" id="modal-add-group-content">
           <p>
             <input id="pimp_my_wolt__name"/>
           </p>
@@ -197,13 +212,105 @@
       document.getElementById('set_team_name_btn').onclick = onclick
   }
 
+  function addMemberSetupModal() {
+    if(!document.querySelector('#modal-member-setup')) {
+      const modalHtml = ` <div class="modal micromodal-slide" id="modal-member-setup" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+      <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-member-setup-title">
+        <header class="modal__header">
+          <h2 class="modal__title" id="modal-member-setup-title">
+            Set Member Name
+          </h2>
+          <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
+        </header>
+        <main class="modal__content" id="modal-member-setup-content">
+          <p>
+            <input id="pimp_my_wolt__name"/>
+          </p>
+        </main>
+        <footer class="modal__footer">
+          <button class="modal__btn modal__btn-primary" id="set_team_name_btn">Continue</button>
+          <button class="modal__btn" data-micromodal-close aria-label="Close this dialog window">Close</button>
+        </footer>
+      </div>
+    </div>
+  </div>`
+      document.querySelector('body').insertAdjacentHTML('beforeend', modalHtml)
+      // const onclick = () => {
+      //   const teamName = document.getElementById("pimp_my_wolt__name").value;
+      //   chrome.storage.sync.set({teamName});
+      //   MicroModal.close()
+      //   document.getElementById(buttonSettings.id).remove()
+      // }
+      // document.getElementById('set_team_name_btn').onclick = onclick
+    }
+  }
+
+  function addRemoveButton(li) {
+    debugger
+    const div = document.createElement("div")
+    div.setAttribute('id', 'pimpMyWolt_remove_from_group')
+    const minusButton = document.createElement("button");
+    minusButton.textContent ="-";
+    div.appendChild(minusButton)
+    li.prepend(div)
+  }
+
+  function removeAddButton(li) {
+    li.querySelector('#pimpMyWolt_add_to_group').remove()
+  }
+
+  function addAddButton(li) {
+    const div = document.createElement("div")
+    div.setAttribute('id', 'pimpMyWolt_add_to_group')
+    div.setAttribute('class', 'action-button-pimpMyWolt')
+    div.textContent ="+";
+    div.onclick = ()=>{
+      MicroModal.show('modal-member-setup')
+    }
+    li.prepend(div)
+  }
+
+
+  function removeRemoveButton(li) {
+    li.querySelector('#pimpMyWolt_remove_from_group').remove()
+  }
+
+  async function addPlusNextToNewMembers() {
+    const guests = await allGuests;
+    const itemsInList = getElementsWithText('li','Ready')
+
+    for (const itemInList of itemsInList){
+      itemInList.classList.add("participant-pimpMyWolt")
+      const woltName = itemInList.querySelector('span').textContent
+      const isInGroup = guests.find(g=> g.woltName === woltName)
+      const isAddButtonExists = Boolean(itemInList.querySelector('#pimpMyWolt_add_to_group'))
+      const isRemoveButtonExists = Boolean(itemInList.querySelector('#pimpMyWolt_remove_from_group'))
+      if(isInGroup){
+        isAddButtonExists && removeAddButton(itemInList)
+        !isRemoveButtonExists && addRemoveButton(itemInList)
+      } else {
+        !isAddButtonExists && addAddButton(itemInList)
+        isRemoveButtonExists && removeRemoveButton(itemInList)
+      }
+    }
+
+  }
+
   setInterval(() => {
     if (!isInviteGroupButtonExists() && isInInviteGroupPage()) {
       addSetGroupModal()
       addInviteGroupButton();
     }
+
+
     if (isOrderButtonExists() && !isOrderButtonUpdated()) {
       updateOrderButtonToSaveGuestsOrders();
+    }
+
+    if(isParticipantTableExists()) {
+      addMemberSetupModal()
+      addPlusNextToNewMembers()
     }
   }, 200);
 })();
