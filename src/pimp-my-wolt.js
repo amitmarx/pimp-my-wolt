@@ -1,4 +1,6 @@
 (function () {
+  const logoUrl = chrome.runtime.getURL("assets/icons/pimp-my-wolt-icon-48.png");
+
   const { groupManager, biLogger } = window.pimpMyWolt;
   const {MicroModal} = window
 
@@ -7,8 +9,8 @@
     allGuests = groupManager.getAllGuests();
   }
   refreshAllGuests()
-  let newMemberWoltName = ''
-  let retireMemberWoltId = ''
+  let memberWoltName = ''
+  let memberWoltId = ''
 
   const buttonSettings = {
     id: "invite-group-button-pimpMyWolt",
@@ -90,7 +92,7 @@
     const btn = document.createElement("button");
     btn.setAttribute("id", buttonSettings.id);
     const teamName = await groupManager.getTeamName();
-      const {text, onclick} = teamName ? getInviteAllBtn(teamName) : getSetupYourTeamBtnProps()
+    const {text, onclick} = teamName ? getInviteAllBtn(teamName) : getSetupYourTeamBtnProps()
     btn.appendChild(document.createTextNode(text))
     btn.onclick = onclick;
     return btn;
@@ -186,16 +188,17 @@
   }
 
   function addSetGroupModal() {
-    const modalHtml = ` <div class="modal micromodal-slide" id="modal-add-group" aria-hidden="true">
+    if(!document.querySelector('#modal-add-group')) {
+      const modalHtml = ` <div class="modal micromodal-slide modal-pimpMyWolt" id="modal-add-group" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1" data-micromodal-close>
       <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-add-group-title">
-        <header class="modal__header">
+        <header class="modal__header modal-header-pimpMyWolt">
+          <img src="${logoUrl}"/>
           <h2 class="modal__title" id="modal-add-group-title">
             Set Group Name
           </h2>
-          <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
         </header>
-        <main class="modal__content" id="modal-add-group-content">
+        <main id="modal-add-group-content">
           <p>
             <input id="pimp_my_wolt__name"/>
           </p>
@@ -207,28 +210,34 @@
       </div>
     </div>
   </div>`
-    document.querySelector('body').insertAdjacentHTML('beforeend', modalHtml)
-      const onclick = () =>{
-          const teamName = document.getElementById("pimp_my_wolt__name").value;
-          chrome.storage.sync.set({ teamName });
-          MicroModal.close()
-          document.getElementById(buttonSettings.id).remove()
+      document.querySelector('body').insertAdjacentHTML('beforeend', modalHtml)
+      const onclick = async () => {
+        const teamName = document.getElementById("pimp_my_wolt__name").value;
+        await groupManager.setTeamName(teamName);
+        refreshAllGuests()
+        MicroModal.close()
+        document.getElementById(buttonSettings.id).remove()
       }
       document.getElementById('set_team_name_btn').onclick = onclick
+    }
   }
 
   function addMemberSetupModal() {
     if(!document.querySelector('#modal-member-setup')) {
-      const modalHtml = ` <div class="modal micromodal-slide" id="modal-member-setup" aria-hidden="true">
+      const modalHtml = ` <div class="modal micromodal-slide modal-pimpMyWolt" id="modal-member-setup" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1" data-micromodal-close>
       <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-member-setup-title">
-        <header class="modal__header">
+        <header class="modal__header modal-header-pimpMyWolt">
+        <img src="${logoUrl}"/>
           <h2 class="modal__title" id="modal-member-setup-title">
-            Set Member Name
+            Set Group Member Name
           </h2>
-          <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
         </header>
-        <main class="modal__content" id="modal-member-setup-content">
+        <main id="modal-member-setup-content">
+        <p>
+        Please type <b><span id="add-member-name-pimpMyWolt"/></b> name on cibus.<br/>
+        Cibus name may be found <a href="https://www.mysodexo.co.il/new_my/new_my_friends.aspx" target="_blank">here</a>.
+        </p>
           <p>
             <input id="pimp_my_wolt__cibus_name"/>
           </p>
@@ -249,7 +258,7 @@
           headers: {
             'content-type': 'application/json',
           },
-          body: JSON.stringify({cibusName: newMemberCibusName, woltName: newMemberWoltName})
+          body: JSON.stringify({cibusName: newMemberCibusName, woltName: memberWoltName})
         });
         refreshAllGuests()
         MicroModal.close()
@@ -261,16 +270,20 @@
 
   function addMemberRemovalModal() {
     if(!document.querySelector('#modal-member-removal')) {
-      const modalHtml = ` <div class="modal micromodal-slide" id="modal-member-removal" aria-hidden="true">
+      const modalHtml = ` <div class="modal micromodal-slide modal-pimpMyWolt" id="modal-member-removal" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1" data-micromodal-close>
       <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-member-removal-title">
-        <header class="modal__header">
+        <header class="modal__header modal-header-pimpMyWolt">
+        <img src="${logoUrl}"/>
           <h2 class="modal__title" id="modal-member-removal-title">
-            Are you sure you want to remove from group?
+            Remove Group Member
           </h2>
-          <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
         </header>
-        <main class="modal__content" id="modal-member-setup-content">
+        <main id="modal-member-setup-content">
+        <p>
+        Are you sure you want to remove <br/>
+            <b><span id="remove-member-name-pimpMyWolt"/></b> from <b><span id="remove-member-group-name-pimpMyWolt"/></b> group?
+        </p>
         </main>
         <footer class="modal__footer">
           <button class="modal__btn modal__btn-primary" id="pimp_my_wolt_remove_member">Continue</button>
@@ -281,7 +294,7 @@
   </div>`
       document.querySelector('body').insertAdjacentHTML('beforeend', modalHtml)
       const onclick = async () => {
-        await fetch('https://amitmarx.wixsite.com/pimp-my-wolt/_functions/group_member/'+retireMemberWoltId, {
+        await fetch('https://amitmarx.wixsite.com/pimp-my-wolt/_functions/group_member/'+memberWoltId, {
           method: 'DELETE'
         });
         refreshAllGuests()
@@ -295,9 +308,14 @@
     const div = document.createElement("div")
     div.setAttribute('id', 'pimpMyWolt_remove_from_group')
     div.setAttribute('class', 'action-button-pimpMyWolt')
+    const woltName= li?.querySelector('span')?.innerText
     div.textContent ="-";
-    div.onclick = () => {
-      retireMemberWoltId = memberId
+    div.onclick = async () => {
+      const teamName = await groupManager.getTeamName();
+      document.querySelector('#remove-member-name-pimpMyWolt').textContent = woltName
+      document.querySelector('#remove-member-group-name-pimpMyWolt').textContent = teamName
+      memberWoltName = woltName
+      memberWoltId = memberId
       MicroModal.show('modal-member-removal')
     }
     li.prepend(div)
@@ -314,7 +332,8 @@
     const woltName= li?.querySelector('span')?.innerText
     div.textContent ="+";
     div.onclick = ()=>{
-      newMemberWoltName = woltName
+      memberWoltName = woltName
+      document.querySelector('#add-member-name-pimpMyWolt').textContent = woltName
       MicroModal.show('modal-member-setup')
     }
     li.prepend(div)
@@ -325,7 +344,7 @@
     li.querySelector('#pimpMyWolt_remove_from_group').remove()
   }
 
-  async function addPlusNextToNewMembers() {
+  async function addActionBtnNextToMembers() {
     const guests = await allGuests;
     const itemsInList = getElementsWithText('li','Ready')
 
@@ -347,21 +366,25 @@
 
   }
 
-  setInterval(() => {
+  function addModals() {
+    addSetGroupModal()
+    addMemberSetupModal()
+    addMemberRemovalModal()
+  }
+
+  setInterval(async () => {
+    addModals()
+
     if (!isInviteGroupButtonExists() && isInInviteGroupPage()) {
-      addSetGroupModal()
       addInviteGroupButton();
     }
-
 
     if (isOrderButtonExists() && !isOrderButtonUpdated()) {
       updateOrderButtonToSaveGuestsOrders();
     }
 
-    if(isParticipantTableExists()) {
-      addMemberSetupModal()
-      addMemberRemovalModal()
-      addPlusNextToNewMembers()
+    if(isParticipantTableExists() && Boolean(await groupManager.getTeamName())) {
+      addActionBtnNextToMembers()
     }
   }, 200);
 })();

@@ -7,6 +7,12 @@
     });
   }
 
+  async function setTeamName(teamName) {
+    return new Promise((res) => {
+      chrome.storage.sync.set({teamName}, ()=> res());
+    });
+  }
+
   async function getUserId() {
     return new Promise((res) => {
       chrome.storage.sync.get("userId", ({ userId }) => {
@@ -34,6 +40,7 @@
       getTeamName,
       getAllGuests,
       getUserId,
+      setTeamName
     },
   };
 })();

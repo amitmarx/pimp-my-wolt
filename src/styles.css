@@ -9,7 +9,16 @@
     display: flex;
     align-items: center;
 }
+.participant-pimpMyWolt a{
+    margin: 0;
+}
 
+.modal-pimpMyWolt {
+    text-align: center;
+}
+.modal-header-pimpMyWolt {
+    justify-content: center;
+}
 .action-button-pimpMyWolt {
     cursor: pointer;
     border-radius: 50%;
