@@ -16,8 +16,13 @@
 .modal-pimpMyWolt {
     text-align: center;
 }
-.modal-header-pimpMyWolt {
+
+.modal__container .modal-header-pimpMyWolt {
     justify-content: center;
+}
+
+.modal__footer .modal-buttons-pimpMyWolt {
+    margin: 0 5px;
 }
 .action-button-pimpMyWolt {
     cursor: pointer;

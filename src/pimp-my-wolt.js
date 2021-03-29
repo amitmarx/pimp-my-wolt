@@ -83,7 +83,7 @@
   }
 
   function getSetupYourTeamBtnProps(){
-      const text = isHebrewWolt ? 'הוסף קבוצה' : 'Add team'
+      const text = isHebrewWolt ? 'הוסף קבוצה' : 'Add Group'
       const onclick = () => MicroModal.show('modal-add-group')
       return {text, onclick}
   }
@@ -200,12 +200,17 @@
         </header>
         <main id="modal-add-group-content">
           <p>
+          Please set your group name.  <br/>
+          Adding members to your group is <br/>
+           available on order checkout.
+          </p>
+          <p>
             <input id="pimp_my_wolt__name"/>
           </p>
         </main>
         <footer class="modal__footer">
-          <button class="modal__btn modal__btn-primary" id="set_team_name_btn">Continue</button>
-          <button class="modal__btn" data-micromodal-close aria-label="Close this dialog window">Close</button>
+          <button class="modal__btn modal-buttons-pimpMyWolt" data-micromodal-close aria-label="Close this dialog window">Cancel</button>
+          <button class="modal__btn modal-buttons-pimpMyWolt modal__btn-primary" id="set_team_name_btn">Confirm</button>
         </footer>
       </div>
     </div>
@@ -243,8 +248,8 @@
           </p>
         </main>
         <footer class="modal__footer">
-          <button class="modal__btn modal__btn-primary" id="pimp_my_wolt_add_new_member">Continue</button>
-          <button class="modal__btn" data-micromodal-close aria-label="Close this dialog window">Close</button>
+          <button class="modal__btn modal-buttons-pimpMyWolt" data-micromodal-close aria-label="Close this dialog window">Close</button>
+          <button class="modal__btn modal-buttons-pimpMyWolt modal__btn-primary" id="pimp_my_wolt_add_new_member">Add</button>
         </footer>
       </div>
     </div>
@@ -286,8 +291,8 @@
         </p>
         </main>
         <footer class="modal__footer">
-          <button class="modal__btn modal__btn-primary" id="pimp_my_wolt_remove_member">Continue</button>
-          <button class="modal__btn" data-micromodal-close aria-label="Close this dialog window">Close</button>
+          <button class="modal__btn modal-buttons-pimpMyWolt" data-micromodal-close aria-label="Close this dialog window">Close</button>
+          <button class="modal__btn modal__btn-primary modal-buttons-pimpMyWolt " id="pimp_my_wolt_remove_member">Remove</button>
         </footer>
       </div>
     </div>
