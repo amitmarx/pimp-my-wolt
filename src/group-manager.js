@@ -2,8 +2,14 @@
   async function getTeamName() {
     return new Promise((res) => {
       chrome.storage.sync.get("teamName", ({ teamName }) =>
-        res(teamName.toLowerCase())
+        res(teamName?.toLowerCase())
       );
+    });
+  }
+
+  async function setTeamName(teamName) {
+    return new Promise((res) => {
+      chrome.storage.sync.set({teamName}, ()=> res());
     });
   }
 
@@ -34,6 +40,7 @@
       getTeamName,
       getAllGuests,
       getUserId,
+      setTeamName
     },
   };
 })();

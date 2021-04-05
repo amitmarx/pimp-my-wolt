@@ -13,9 +13,11 @@
     "content_scripts": [
       {
         "css": [
-          "/src/styles.css"
+          "/src/styles.css",
+          "/src/ext/micromodal.css"
         ],
         "js": [
+          "/src/ext/micromodal.min.js",
           "/src/group-manager.js",
           "/src/bi-logger.js",
           "/src/pimp-my-wolt.js"
@@ -40,6 +42,7 @@
         "match_about_blank": true
       }
     ],
+    "web_accessible_resources": ["/assets/icons/pimp-my-wolt-icon-48.png"],
     "icons": {
       "16": "/assets/icons/pimp-my-wolt-icon-16.png",
       "24": "/assets/icons/pimp-my-wolt-icon-24.png",
