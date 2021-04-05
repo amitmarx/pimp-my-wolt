@@ -201,8 +201,12 @@
         <main id="modal-add-group-content">
           <p>
           Please set your group name.  <br/>
-          Adding members to your group is <br/>
-           available on order checkout.
+          <ul>
+            <li class="little-letters-pimpMyWolt">You can always change your group on<br/>
+                <b>Pimp my Wolt</b> extension options.</li>  
+            <li class="little-letters-pimpMyWolt">Adding members to your group is <br/>
+                available on order checkout.</li>
+           </ul>
           </p>
           <p>
             <input id="pimp_my_wolt__name"/>

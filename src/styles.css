@@ -42,3 +42,8 @@
     justify-content: center;
     flex: 0 0 auto;
 }
+
+.little-letters-pimpMyWolt {
+    font-size: small;
+    color: gray;
+}
