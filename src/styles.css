@@ -24,6 +24,7 @@
 .modal__footer .modal-buttons-pimpMyWolt {
     margin: 0 5px;
 }
+
 .action-button-pimpMyWolt {
     cursor: pointer;
     border-radius: 50%;
@@ -41,6 +42,10 @@
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
+}
+
+.action-button-pimpMyWolt:hover{
+    border: 1px solid black;
 }
 
 .little-letters-pimpMyWolt {

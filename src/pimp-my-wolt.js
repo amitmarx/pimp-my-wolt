@@ -355,7 +355,7 @@
 
   async function addActionBtnNextToMembers() {
     const guests = await allGuests;
-    const itemsInList = getElementsWithText('li','Ready')
+    const itemsInList = getElementsWithText('li', readyText)
 
     for (const itemInList of itemsInList){
       itemInList.classList.add("participant-pimpMyWolt")
