@@ -139,7 +139,7 @@
 
   function getGuestsOrders() {
     const orderTable = document.querySelector(
-      "[class^=Tabs__root] [class^=Tabs__content]"
+      "[class^=Tabs-module__root] [class^=Tabs-module__content]"
     );
     const guestsLineItems = Array.from(
       orderTable?.querySelectorAll("li") || []
@@ -147,10 +147,10 @@
 
     return guestsLineItems
       .map((item) => {
-        const name = item.querySelector('[class*="GuestItem__listName"] span')
+        const name = item.querySelector('[class*="GuestItem-module__listName"] span')
           ?.innerText;
         const price = priceToNumber(
-          item.querySelector('[class*="GuestItem__price"]')?.innerText
+          item.querySelector('[class*="GuestItem-module__price"]')?.innerText
         );
 
         return {
