@@ -209,7 +209,7 @@
            </ul>
           </p>
           <p>
-            <input id="pimp_my_wolt__name"/>
+            <input id="pimp_my_wolt__name" class="pimp_my_wolt__input"/>
           </p>
         </main>
         <footer class="modal__footer">
@@ -248,7 +248,7 @@
         Cibus name may be found <a href="https://www.mysodexo.co.il/new_my/new_my_friends.aspx" target="_blank">here</a>.
         </p>
           <p>
-            <input id="pimp_my_wolt__cibus_name"/>
+            <input id="pimp_my_wolt__cibus_name" class="pimp_my_wolt__input"/>
           </p>
         </main>
         <footer class="modal__footer">
@@ -343,6 +343,7 @@
     div.onclick = ()=>{
       memberWoltName = woltName
       document.querySelector('#add-member-name-pimpMyWolt').textContent = woltName
+      document.querySelector("#pimp_my_wolt__cibus_name").value = ''
       MicroModal.show('modal-member-setup')
     }
     li.prepend(div)

@@ -5,6 +5,11 @@
     cursor: pointer;
 }
 
+.pimp_my_wolt__input {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
 .participant-pimpMyWolt {
     display: flex;
     align-items: center;
