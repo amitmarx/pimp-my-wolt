@@ -1,8 +1,8 @@
   {
     "name": "Pimp my Wolt",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "description": "Boost wolt up 🚀",
-    "manifest_version": 2,
+    "manifest_version": 3,
     "permissions": [
       "storage"
     ],
@@ -42,7 +42,13 @@
         "match_about_blank": true
       }
     ],
-    "web_accessible_resources": ["/assets/icons/pimp-my-wolt-icon-48.png"],
+    "web_accessible_resources": [
+      {
+        "resources": ["/assets/icons/pimp-my-wolt-icon-48.png"],
+        "matches": ["<all_urls>"],
+        "extension_ids": ["edfemdoibbcbmkojfdeldnllcbnpmfld"]
+      }
+    ],
     "icons": {
       "16": "/assets/icons/pimp-my-wolt-icon-16.png",
       "24": "/assets/icons/pimp-my-wolt-icon-24.png",

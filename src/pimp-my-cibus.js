@@ -66,6 +66,7 @@
     guestsOrders,
     deliveryPrice,
   }) {
+    const allCibusUsersAvailable = new Array(...document.querySelectorAll('label>input')).map(x=>x?.parentNode).map(x=>x?.innerText);
     const currentCibusUser = document.querySelector("#lblMyName").innerText;
     const currentUser =
       (await allGuests).find((guest) => guest.cibusName === currentCibusUser)
@@ -76,6 +77,7 @@
       settledGuests,
       guestsOrders,
       deliveryPrice,
+      allCibusUsersAvailable
     });
   }
 
