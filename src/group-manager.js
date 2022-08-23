@@ -1,5 +1,11 @@
 (function () {
-  async function getTeamName() {
+  async function setTeamName(teamName) {
+    return new Promise((res) => {
+      chrome.storage.sync.set({ teamName }, () => res());
+    });
+  }
+
+  async function getTeamNameFromStorage() {
     return new Promise((res) => {
       chrome.storage.sync.get("teamName", ({ teamName }) =>
         res(teamName?.toLowerCase())
@@ -7,10 +13,12 @@
     });
   }
 
-  async function setTeamName(teamName) {
-    return new Promise((res) => {
-      chrome.storage.sync.set({teamName}, ()=> res());
-    });
+  async function isTeamSet() {
+    return Boolean(await getTeamNameFromStorage());
+  }
+
+  async function getTeamName() {
+    return (await getTeamNameFromStorage()) || (await getUserId());
   }
 
   async function getUserId() {
@@ -37,10 +45,11 @@
   window.pimpMyWolt = {
     ...window.pimpMyWolt,
     groupManager: {
+      isTeamSet,
       getTeamName,
       getAllGuests,
       getUserId,
-      setTeamName
+      setTeamName,
     },
   };
 })();
