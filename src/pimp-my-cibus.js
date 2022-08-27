@@ -5,6 +5,11 @@
   const paymentButtonSettings = {
     settledAttribute: "settled",
   };
+  
+  const postPayment = {
+    divId: "postPaymentDiv-pimpMyWolt",
+    autoPaymentButtonId: "autoPaymentButton-pimpMyWolt"
+  };
 
   const getPaymentButton = () => document.getElementById("pnlBtnPay");
   const isPaymentButtonExists = () => Boolean(getPaymentButton());
@@ -26,6 +31,21 @@
     return document
       .evaluate(xpath, document, null, XPathResult.ANY_TYPE, null)
       .iterateNext();
+  }
+
+  async function getAutoMatch({woltNames, cibusNames}) {
+    const response = await fetch(
+      `https://amitmarx.wixsite.com/pimp-my-wolt/_functions/cibus_wolt_auto_matches`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        method: "POST",
+        body: JSON.stringify({woltNames, cibusNames})
+      }
+    );
+    const responseJson = await response.json();
+    return responseJson;
   }
 
   async function handleCibusPayment() {
@@ -50,6 +70,15 @@
           };
         });
         const settledGuests = await setGuestsDebts(guestDebts);
+        handlePostPayment({settledGuests, guestDebts})
+        //TODO: remove debbugging
+        // handlePostPayment({
+        //   settledGuests: [{ name: "Oz Golan", price: 10 }],
+        //   guestDebts: [
+        //     { woltName: "Oz Golan", cibusName: "עוז גולן", debt: 10 },
+        //     { woltName: "Ben Baler", cibusName: "בן בלר", debt: 20 },
+        //   ],
+        // });
         publishSplitPaymentEvent({
           restaurant,
           settledGuests,
@@ -60,13 +89,74 @@
     );
   }
 
+  async function autoSplitDebt(debts){
+    const cibusNames = getAllCibusNames()
+    const woltNames = debts.map(({woltName})=> woltName)
+    const autoMapping = await getAutoMatch({cibusNames, woltNames})
+    const cibusToWolt = autoMapping.reduce((o, item) => {
+      o[item.woltName] = item.cibusName;
+      return o;
+    }, {});
+    const debtsWithAutoMatch = debts.map((d) => {
+      return {
+        ...d,
+        cibusName: cibusToWolt[d.woltName],
+      };
+    });
+    const settledGuests = await setGuestsDebts(debtsWithAutoMatch);
+    publishAutoSplitPaymentEvent({settledGuests, guestsOrders: debts})
+  }
+  
+  function getPostPaymentContent({ settledGuests, guestDebts }) {
+    const leftToSplit = settledGuests.length < guestDebts.length;
+    const div = document.createElement("div");
+    div.setAttribute("id", postPayment.divId);
+
+    const splitMessage =
+      settledGuests.length > 0
+        ? " הופה! הצלחנו לפצל " + settledGuests.length + " תשלומים עפ״י המיפוי בקבוצה שלך"
+        : `לא הצלחנו לפצל תשלומים עפ״י המיפוי בקבוצה.`;
+    const splitSpan = document.createElement("span")
+    splitSpan.appendChild(document.createTextNode(splitMessage));
+    div.appendChild(splitSpan);
+
+    const settledMessage = leftToSplit
+      ? "אל דאגה, אתה יכול להשתמש באלגוריתם הפיצול האוטומטי שלנו"
+      : "";
+    const settledSpan = document.createElement("span");
+    settledSpan.appendChild(document.createTextNode(settledMessage))
+    div.appendChild(settledSpan);
+
+    if (leftToSplit) {
+      const btn = document.createElement("button");
+      btn.setAttribute("id", postPayment.autoPaymentButtonId);
+      btn.setAttribute("type", "button");
+      btn.appendChild(document.createTextNode("פצל אוטומטית"));
+      const settledNames = settledGuests.map(x=> x.name)
+      const debts = guestDebts.filter(({woltName}) => !settledNames.includes(woltName))
+      btn.onclick = () => autoSplitDebt(debts);
+      div.appendChild(btn);
+    }
+    return div;
+  }
+
+  function handlePostPayment({ settledGuests, guestDebts }) {
+    const content = getPostPaymentContent({ settledGuests, guestDebts });
+    const splitPanel = document.querySelector("#pnlSplitPay");
+    splitPanel.prepend(content);
+  }
+  
+  function getAllCibusNames(){
+    return new Array(...document.querySelectorAll('label>input')).map(x=>x?.parentNode).map(x=>x?.innerText);
+  }
+
   async function publishSplitPaymentEvent({
     restaurant,
     settledGuests,
     guestsOrders,
     deliveryPrice,
   }) {
-    const allCibusUsersAvailable = new Array(...document.querySelectorAll('label>input')).map(x=>x?.parentNode).map(x=>x?.innerText);
+    const allCibusUsersAvailable = getAllCibusNames()
     const currentCibusUser = document.querySelector("#lblMyName").innerText;
     const currentUser =
       (await allGuests).find((guest) => guest.cibusName === currentCibusUser)
@@ -77,6 +167,23 @@
       settledGuests,
       guestsOrders,
       deliveryPrice,
+      allCibusUsersAvailable
+    });
+  }
+
+  async function publishAutoSplitPaymentEvent({
+    settledGuests,
+    guestsOrders,
+  }) {
+    const allCibusUsersAvailable = getAllCibusNames()
+    const currentCibusUser = document.querySelector("#lblMyName").innerText;
+    const currentUser =
+      (await allGuests).find((guest) => guest.cibusName === currentCibusUser)
+        ?.woltName || currentCibusUser;
+    biLogger.logEvent("auto_split_payment", {
+      userName: currentUser,
+      settledGuests,
+      guestsOrders,
       allCibusUsersAvailable
     });
   }
