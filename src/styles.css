@@ -30,6 +30,17 @@
     margin: 0 5px;
 }
 
+#autoPaymentButton-pimpMyWolt {
+    display: flex;
+    border-radius: 5rem;
+    background: lightgrey;
+    color: rgb(255, 255, 255);
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 700;
+}
+
 .action-button-pimpMyWolt {
     cursor: pointer;
     border-radius: 50%;
