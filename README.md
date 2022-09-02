@@ -5,7 +5,7 @@ We use Wolt's shared order and split the payment on Cibus.
 Instead of manually splitting the payment on Cibus,  
 I've created this nice Chrome extension to achieve it automatically. 
 
-# Setting Up
+# Installation
 
 1. Visit [Pimp my Wolt](https://chrome.google.com/webstore/detail/pimp-my-wolt/edfemdoibbcbmkojfdeldnllcbnpmfld) Chrome Web Store page and click `Add to Chrome`.  
 
@@ -13,8 +13,8 @@ I've created this nice Chrome extension to achieve it automatically.
 
 https://user-images.githubusercontent.com/22027545/188240633-95b28090-7746-4547-a123-ffe967babd29.mov
    
-3. Onboard new members to your group.  
-Onboarding is done once and used for every future order.  
-If you missed someone, don't worry, you can always try our automatic splitting algorithm:  
+3. Onboard new members to your group. Onboarding is done once and used for every future order.  
+If you missed someone, don't worry, you can always try our automatic splitting algorithm.  
+From now on you'll never split payments manually! 🎉
 
 https://user-images.githubusercontent.com/22027545/188240914-9a76a532-df71-4f45-a79a-55be08b3d91e.mov
