@@ -1,4 +1,7 @@
 (function () {
+  const logoUrl = chrome.runtime.getURL(
+      "assets/icons/pimp-my-wolt-icon-48.png"
+  );
   const { groupManager, biLogger } = window.pimpMyWolt;
   const allGuests = groupManager.getAllGuests();
 
@@ -71,14 +74,6 @@
         });
         const settledGuests = await setGuestsDebts(guestDebts);
         handlePostPayment({settledGuests, guestDebts})
-        //TODO: remove debbugging
-        // handlePostPayment({
-        //   settledGuests: [{ name: "Oz Golan", price: 10 }],
-        //   guestDebts: [
-        //     { woltName: "Oz Golan", cibusName: "עוז גולן", debt: 10 },
-        //     { woltName: "Ben Baler", cibusName: "בן בלר", debt: 20 },
-        //   ],
-        // });
         publishSplitPaymentEvent({
           restaurant,
           settledGuests,
@@ -89,7 +84,7 @@
     );
   }
 
-  async function autoSplitDebt(debts){
+  async function autoMatchCibusNameToBet(debts){
     const cibusNames = getAllCibusNames()
     const woltNames = debts.map(({woltName})=> woltName)
     const autoMapping = await getAutoMatch({cibusNames, woltNames})
@@ -97,44 +92,56 @@
       o[item.woltName] = item.cibusName;
       return o;
     }, {});
-    const debtsWithAutoMatch = debts.map((d) => {
+    return debts.map((d) => {
       return {
         ...d,
         cibusName: cibusToWolt[d.woltName],
       };
     });
-    const settledGuests = await setGuestsDebts(debtsWithAutoMatch);
+  }
+
+  async function autoSplitDebt(asyncDebts) {
+    const debts = await asyncDebts;
+    const settledGuests = await setGuestsDebts(debts);
     publishAutoSplitPaymentEvent({settledGuests, guestsOrders: debts})
+    const postPaymentDiv = document.querySelector(`#${postPayment.divId}`)
+    postPaymentDiv.innerHTML = "<span>מקווים שעזרנו... &#128521;</span>"
   }
   
   function getPostPaymentContent({ settledGuests, guestDebts }) {
-    const leftToSplit = settledGuests.length < guestDebts.length;
+    const leftToSplit = settledGuests.length < guestDebts.length - 1;
     const div = document.createElement("div");
     div.setAttribute("id", postPayment.divId);
 
     const splitMessage =
       settledGuests.length > 0
-        ? " הופה! הצלחנו לפצל " + settledGuests.length + " תשלומים עפ״י המיפוי בקבוצה שלך"
+        ? " הופה! הצלחנו לפצל " + settledGuests.length + "תשלומים עפ״י המיפוי בקבוצה שלך."
         : `לא הצלחנו לפצל תשלומים עפ״י המיפוי בקבוצה.`;
     const splitSpan = document.createElement("span")
     splitSpan.appendChild(document.createTextNode(splitMessage));
     div.appendChild(splitSpan);
+    div.appendChild(document.createElement("br"))
 
     const settledMessage = leftToSplit
-      ? "אל דאגה, אתה יכול להשתמש באלגוריתם הפיצול האוטומטי שלנו"
+      ? "אל דאגה, אפשר לנסות את מנגנון הפיצול האוטומטי שלנו"
       : "";
     const settledSpan = document.createElement("span");
     settledSpan.appendChild(document.createTextNode(settledMessage))
     div.appendChild(settledSpan);
 
     if (leftToSplit) {
-      const btn = document.createElement("button");
+      const btn = document.createElement("div");
       btn.setAttribute("id", postPayment.autoPaymentButtonId);
-      btn.setAttribute("type", "button");
       btn.appendChild(document.createTextNode("פצל אוטומטית"));
+
+      const logoImage = document.createElement('img');
+      logoImage.src = logoUrl;
+      btn.appendChild(logoImage)
+
       const settledNames = settledGuests.map(x=> x.name)
       const debts = guestDebts.filter(({woltName}) => !settledNames.includes(woltName))
-      btn.onclick = () => autoSplitDebt(debts);
+      const debtsWithAutoMatch = autoMatchCibusNameToBet(debts)
+      btn.onclick = () => autoSplitDebt(debtsWithAutoMatch);
       div.appendChild(btn);
     }
     return div;
@@ -146,8 +153,18 @@
     splitPanel.prepend(content);
   }
   
-  function getAllCibusNames(){
-    return new Array(...document.querySelectorAll('label>input')).map(x=>x?.parentNode).map(x=>x?.innerText);
+  function getAllCibusNames() {
+    const notSelectedUsers = new Array(
+      ...document.querySelectorAll("label>input")
+    )
+      .map((x) => x?.parentNode)
+      .map((x) => x?.innerText);
+    const selectedUsers = new Array(
+      ...document.querySelectorAll("#splitList label")
+    )
+      .map((x) => x?.innerText)
+      .filter((x) => x && !x.includes("הוספת חברים"));
+    return [...notSelectedUsers, ...selectedUsers];
   }
 
   async function publishSplitPaymentEvent({
@@ -236,5 +253,5 @@
       openSplitPaymentTable();
       handleCibusPayment();
     }
-  }, 200);
+  }, 100);
 })();
