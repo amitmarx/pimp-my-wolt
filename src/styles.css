@@ -33,12 +33,23 @@
 #autoPaymentButton-pimpMyWolt {
     display: flex;
     border-radius: 5rem;
-    background: lightgrey;
-    color: rgb(255, 255, 255);
+    color: #009de0;
     justify-content: center;
     align-items: center;
     cursor: pointer;
     font-weight: 700;
+    border: 1px solid #009de0;
+    background-color: white;  
+    margin: 10px 0 10px 0;
+}
+#autoPaymentButton-pimpMyWolt:hover {
+      background-color: #ebfafe;
+}
+
+#autoPaymentButton-pimpMyWolt img {
+  margin-top: -30px;
+  margin-bottom: -20px;
+  height: 100px;
 }
 
 .action-button-pimpMyWolt {

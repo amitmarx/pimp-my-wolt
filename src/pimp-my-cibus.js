@@ -1,17 +1,22 @@
 (function () {
   const logoUrl = chrome.runtime.getURL(
-      "assets/icons/pimp-my-wolt-icon-48.png"
+    "assets/icons/pimp-my-wolt-icon-128.png"
   );
+  const loaderUrl = chrome.runtime.getURL("/assets/loader.gif");
   const { groupManager, biLogger } = window.pimpMyWolt;
   const allGuests = groupManager.getAllGuests();
 
   const paymentButtonSettings = {
     settledAttribute: "settled",
   };
-  
-  const postPayment = {
+
+  const automaticPaymentContent = {
     divId: "postPaymentDiv-pimpMyWolt",
-    autoPaymentButtonId: "autoPaymentButton-pimpMyWolt"
+    autoPaymentButtonId: "autoPaymentButton-pimpMyWolt",
+  };
+
+  const message = {
+    divId: "messageDiv-pimpMyWolt",
   };
 
   const getPaymentButton = () => document.getElementById("pnlBtnPay");
@@ -36,58 +41,66 @@
       .iterateNext();
   }
 
-  async function getAutoMatch({woltNames, cibusNames}) {
+  async function getAutoMatch({ woltNames, cibusNames }) {
     const response = await fetch(
-      `https://amitmarx.wixsite.com/pimp-my-wolt/_functions/cibus_wolt_auto_matches`, {
+      `https://amitmarx.wixsite.com/pimp-my-wolt/_functions/cibus_wolt_auto_matches`,
+      {
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
         method: "POST",
-        body: JSON.stringify({woltNames, cibusNames})
+        body: JSON.stringify({ woltNames, cibusNames }),
       }
     );
     const responseJson = await response.json();
     return responseJson;
   }
 
-  async function handleCibusPayment() {
+  const fetchFromStorage = (...items) =>
+    new Promise((res, rej) => {
+      chrome.storage.local.get(items, (result) => res(result));
+    });
+
+  async function handleMappingPayment() {
     const guests = await allGuests;
-    chrome.storage.local.get(
-      ["deliveryPrice", "guestsOrders", "orderTimestamp", "restaurant"],
-      async ({ deliveryPrice, guestsOrders, orderTimestamp, restaurant }) => {
-        if (orderTimestamp + 30 * 1000 < Date.now()) {
-          return;
-        }
-        const guestDeliveryShare = Number(
-          (deliveryPrice / guestsOrders.length).toFixed(2)
-        );
-        const guestDebts = guestsOrders.map((guestOrder) => {
-          const cibusName = guests.find(
-            (guest) => guest.woltName === guestOrder.name
-          )?.cibusName;
-          return {
-            woltName: guestOrder.name,
-            cibusName,
-            debt: guestOrder.price + guestDeliveryShare,
-          };
-        });
-        const settledGuests = await setGuestsDebts(guestDebts);
-        handlePostPayment({settledGuests, guestDebts})
-        publishSplitPaymentEvent({
-          restaurant,
-          settledGuests,
-          guestsOrders,
-          deliveryPrice,
-        });
-      }
+    const { deliveryPrice, guestsOrders, orderTimestamp, restaurant } =
+      await fetchFromStorage(
+        "deliveryPrice",
+        "guestsOrders",
+        "orderTimestamp",
+        "restaurant"
+      );
+    if (orderTimestamp + 30 * 1000 < Date.now()) {
+      return;
+    }
+    const guestDeliveryShare = Number(
+      (deliveryPrice / guestsOrders.length).toFixed(2)
     );
+    const guestDebts = guestsOrders.map((guestOrder) => {
+      const cibusName = guests.find(
+        (guest) => guest.woltName === guestOrder.name
+      )?.cibusName;
+      return {
+        woltName: guestOrder.name,
+        cibusName,
+        debt: guestOrder.price + guestDeliveryShare,
+      };
+    });
+    const settledGuests = await setGuestsDebts(guestDebts);
+    publishSplitPaymentEvent({
+      restaurant,
+      settledGuests,
+      guestsOrders,
+      deliveryPrice,
+    });
+    return { settledGuests, guestDebts };
   }
 
-  async function autoMatchCibusNameToBet(debts){
-    const cibusNames = getAllCibusNames()
-    const woltNames = debts.map(({woltName})=> woltName)
-    const autoMapping = await getAutoMatch({cibusNames, woltNames})
+  async function autoMatchCibusNameToBet(debts) {
+    const cibusNames = getAllCibusNames();
+    const woltNames = debts.map(({ woltName }) => woltName);
+    const autoMapping = await getAutoMatch({ cibusNames, woltNames });
     const cibusToWolt = autoMapping.reduce((o, item) => {
       o[item.woltName] = item.cibusName;
       return o;
@@ -103,68 +116,98 @@
   async function autoSplitDebt(asyncDebts) {
     const debts = await asyncDebts;
     const settledGuests = await setGuestsDebts(debts);
-    publishAutoSplitPaymentEvent({settledGuests, guestsOrders: debts})
-    const postPaymentDiv = document.querySelector(`#${postPayment.divId}`)
-    postPaymentDiv.innerHTML = "<span>מקווים שעזרנו... &#128521;</span>"
+    publishAutoSplitPaymentEvent({ settledGuests, guestsOrders: debts });
+    const autoPaymentDiv = document.querySelector(`#${automaticPaymentContent.divId}`);
+    autoPaymentDiv.innerHTML = '<span style="font-weight: bold;">מקווים שעזרנו... &#128521;</span>';
   }
-  
-  function getPostPaymentContent({ settledGuests, guestDebts }) {
-    const leftToSplit = settledGuests.length < guestDebts.length - 1;
+
+  function getAutomaticContent({ settledGuests, guestDebts }) {
+    const leftToSplit = getSelectedCibusNames().length < guestDebts.length;
     const div = document.createElement("div");
-    div.setAttribute("id", postPayment.divId);
+    div.setAttribute("id", automaticPaymentContent.divId);
 
     const splitMessage =
       settledGuests.length > 0
-        ? " הופה! הצלחנו לפצל " + settledGuests.length + "תשלומים עפ״י המיפוי בקבוצה שלך."
-        : `לא הצלחנו לפצל תשלומים עפ״י המיפוי בקבוצה.`;
-    const splitSpan = document.createElement("span")
+        ? " הופה! הצלחנו לפצל " +
+          settledGuests.length +
+          " תשלומים עפ״י המיפוי בקבוצה. "
+        : "";
+    const splitSpan = document.createElement("span");
     splitSpan.appendChild(document.createTextNode(splitMessage));
     div.appendChild(splitSpan);
-    div.appendChild(document.createElement("br"))
+    div.appendChild(document.createElement("br"));
 
-    const settledMessage = leftToSplit
-      ? "אל דאגה, אפשר לנסות את מנגנון הפיצול האוטומטי שלנו"
-      : "";
+    const settledMessage =
+      leftToSplit && settledGuests.length > 0
+        ? "שמנו לב כי יתר המזמינים אינם ממופים - נסו את הפיצול האוטומטי שלנו. "
+        : leftToSplit
+        ? `לא הצלחנו לפצל תשלומים עפ״י המיפוי בקבוצה. נסו את הפיצול האוטומטי שלנו`
+        : "";
     const settledSpan = document.createElement("span");
-    settledSpan.appendChild(document.createTextNode(settledMessage))
+    settledSpan.appendChild(document.createTextNode(settledMessage));
     div.appendChild(settledSpan);
 
     if (leftToSplit) {
       const btn = document.createElement("div");
-      btn.setAttribute("id", postPayment.autoPaymentButtonId);
-      btn.appendChild(document.createTextNode("פצל אוטומטית"));
+      btn.setAttribute("id", automaticPaymentContent.autoPaymentButtonId);
 
-      const logoImage = document.createElement('img');
+      const logoImage = document.createElement("img");
       logoImage.src = logoUrl;
-      btn.appendChild(logoImage)
+      btn.appendChild(logoImage);
 
-      const settledNames = settledGuests.map(x=> x.name)
-      const debts = guestDebts.filter(({woltName}) => !settledNames.includes(woltName))
-      const debtsWithAutoMatch = autoMatchCibusNameToBet(debts)
+      const textDiv = document.createElement("div");
+      textDiv.appendChild(document.createTextNode("פצל אוטומטית"));
+      btn.appendChild(textDiv);
+
+      const settledNames = settledGuests.map((x) => x.name);
+      const debts = guestDebts.filter(
+        ({ woltName }) => !settledNames.includes(woltName)
+      );
+      const debtsWithAutoMatch = autoMatchCibusNameToBet(debts);
       btn.onclick = () => autoSplitDebt(debtsWithAutoMatch);
       div.appendChild(btn);
     }
     return div;
   }
 
-  function handlePostPayment({ settledGuests, guestDebts }) {
-    const content = getPostPaymentContent({ settledGuests, guestDebts });
-    const splitPanel = document.querySelector("#pnlSplitPay");
-    splitPanel.prepend(content);
+  function setContent(content) {
+    const contentDiv = document.querySelector(`#${message.divId}`);
+    if (!contentDiv) {
+      const splitPanel = document.querySelector("#pnlSplitPay");
+      const div = document.createElement("div");
+      div.setAttribute("id", message.divId);
+      splitPanel.prepend(div);
+      return setContent(content);
+    }
+    contentDiv.innerHTML = "";
+    contentDiv.prepend(content);
   }
-  
-  function getAllCibusNames() {
-    const notSelectedUsers = new Array(
-      ...document.querySelectorAll("label>input")
-    )
-      .map((x) => x?.parentNode)
-      .map((x) => x?.innerText);
-    const selectedUsers = new Array(
-      ...document.querySelectorAll("#splitList label")
-    )
+
+  function setLoader() {
+    const loaderImage = document.createElement("img");
+    loaderImage.src = loaderUrl;
+    setContent(loaderImage);
+  }
+
+  function handleAutomaticPayment({ settledGuests, guestDebts }) {
+    const content = getAutomaticContent({ settledGuests, guestDebts });
+    setContent(content);
+  }
+
+  function getSelectedCibusNames() {
+    return new Array(...document.querySelectorAll("#splitList label"))
       .map((x) => x?.innerText)
       .filter((x) => x && !x.includes("הוספת חברים"));
-    return [...notSelectedUsers, ...selectedUsers];
+  }
+
+  function getNotSelectedCibusNames() {
+    return new Array(...document.querySelectorAll("label>input"))
+      .map((x) => x?.parentNode)
+      .map((x) => x?.innerText);
+  }
+
+  function getAllCibusNames() {
+    return [...getNotSelectedCibusNames(), ...getSelectedCibusNames()];
   }
 
   async function publishSplitPaymentEvent({
@@ -173,7 +216,7 @@
     guestsOrders,
     deliveryPrice,
   }) {
-    const allCibusUsersAvailable = getAllCibusNames()
+    const allCibusUsersAvailable = getAllCibusNames();
     const currentCibusUser = document.querySelector("#lblMyName").innerText;
     const currentUser =
       (await allGuests).find((guest) => guest.cibusName === currentCibusUser)
@@ -184,15 +227,12 @@
       settledGuests,
       guestsOrders,
       deliveryPrice,
-      allCibusUsersAvailable
+      allCibusUsersAvailable,
     });
   }
 
-  async function publishAutoSplitPaymentEvent({
-    settledGuests,
-    guestsOrders,
-  }) {
-    const allCibusUsersAvailable = getAllCibusNames()
+  async function publishAutoSplitPaymentEvent({ settledGuests, guestsOrders }) {
+    const allCibusUsersAvailable = getAllCibusNames();
     const currentCibusUser = document.querySelector("#lblMyName").innerText;
     const currentUser =
       (await allGuests).find((guest) => guest.cibusName === currentCibusUser)
@@ -201,7 +241,7 @@
       userName: currentUser,
       settledGuests,
       guestsOrders,
-      allCibusUsersAvailable
+      allCibusUsersAvailable,
     });
   }
 
@@ -247,11 +287,13 @@
     document.querySelector('label[for="cbSplit"]').click();
   }
 
-  setInterval(() => {
+  setInterval(async () => {
     if (isPaymentButtonExists() && !isPaymentSettled()) {
+      setLoader()
       setPaymentSettled();
       openSplitPaymentTable();
-      handleCibusPayment();
+      const { settledGuests, guestDebts } = await handleMappingPayment();
+      handleAutomaticPayment({ settledGuests, guestDebts });
     }
   }, 100);
 })();
