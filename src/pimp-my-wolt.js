@@ -29,6 +29,7 @@
     : "Suggested guests";
   const readyText = isHebrewWolt ? "מוכן" : "Ready";
   const deliveryText = isHebrewWolt ? "משלוח" : "Delivery";
+  const totalText = isHebrewWolt ? 'סה"כ' : "Total";
 
   const isInInviteGroupPage = () =>
     Boolean(getElementWithText("h3", suggestedGuestsText));
@@ -131,6 +132,14 @@
     return restaurant;
   }
 
+  function getTotalAmountPrice() {
+    const amountWithCurrency = getElementWithText(
+      "dl",
+      totalText
+    )?.querySelector("dd")?.innerText;
+    return priceToNumber(amountWithCurrency ?? "");
+  }
+
   function getDeliveryPrice() {
     const amountWithCurrency = getElementWithText(
       "dl",
@@ -175,11 +184,13 @@
       '[data-test-id="SendOrderButton"]'
     );
     sendOrderButton.onclick = () => {
+      const totalOrderPrice = getTotalAmountPrice();
       const guestsOrders = getGuestsOrders();
       const deliveryPrice = getDeliveryPrice();
       const restaurant = getRestuarant();
       const orderTimestamp = Date.now();
       chrome.storage.local.set({
+        totalOrderPrice,
         guestsOrders,
         deliveryPrice,
         orderTimestamp,

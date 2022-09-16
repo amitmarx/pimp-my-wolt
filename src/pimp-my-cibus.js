@@ -64,18 +64,30 @@
 
   async function handleMappingPayment() {
     const guests = await allGuests;
-    const { deliveryPrice, guestsOrders, orderTimestamp, restaurant } =
-      await fetchFromStorage(
-        "deliveryPrice",
-        "guestsOrders",
-        "orderTimestamp",
-        "restaurant"
-      );
+    const {
+      totalOrderPrice,
+      deliveryPrice,
+      guestsOrders,
+      orderTimestamp,
+      restaurant,
+    } = await fetchFromStorage(
+      "totalOrderPrice",
+      "deliveryPrice",
+      "guestsOrders",
+      "orderTimestamp",
+      "restaurant"
+    );
     if (orderTimestamp + 30 * 1000 < Date.now()) {
       return;
     }
-    const guestDeliveryShare = Number(
-      (deliveryPrice / guestsOrders.length).toFixed(2)
+    const totalGuestPrice = guestsOrders.reduce(
+      (partialSum, guestOrder) => partialSum + guestOrder.price,
+      0
+    );
+    // Including delivery and tip.
+    const orderAdditionalCharge = totalOrderPrice - totalGuestPrice;
+    const additionalChargePerGuest = Number(
+      (orderAdditionalCharge / guestsOrders.length).toFixed(2)
     );
     const guestDebts = guestsOrders.map((guestOrder) => {
       const cibusName = guests.find(
@@ -84,7 +96,7 @@
       return {
         woltName: guestOrder.name,
         cibusName,
-        debt: guestOrder.price + guestDeliveryShare,
+        debt: guestOrder.price + additionalChargePerGuest,
       };
     });
     const settledGuests = await setGuestsDebts(guestDebts);
@@ -93,6 +105,7 @@
       settledGuests,
       guestsOrders,
       deliveryPrice,
+      totalOrderPrice,
     });
     return { settledGuests, guestDebts };
   }
@@ -117,8 +130,11 @@
     const debts = await asyncDebts;
     const settledGuests = await setGuestsDebts(debts);
     publishAutoSplitPaymentEvent({ settledGuests, guestsOrders: debts });
-    const autoPaymentDiv = document.querySelector(`#${automaticPaymentContent.divId}`);
-    autoPaymentDiv.innerHTML = '<span style="font-weight: bold;">מקווים שעזרנו... &#128521;</span>';
+    const autoPaymentDiv = document.querySelector(
+      `#${automaticPaymentContent.divId}`
+    );
+    autoPaymentDiv.innerHTML =
+      '<span style="font-weight: bold;">מקווים שעזרנו... &#128521;</span>';
   }
 
   function getAutomaticContent({ settledGuests, guestDebts }) {
@@ -215,6 +231,7 @@
     settledGuests,
     guestsOrders,
     deliveryPrice,
+    totalOrderPrice,
   }) {
     const allCibusUsersAvailable = getAllCibusNames();
     const currentCibusUser = document.querySelector("#lblMyName").innerText;
@@ -227,6 +244,7 @@
       settledGuests,
       guestsOrders,
       deliveryPrice,
+      totalOrderPrice,
       allCibusUsersAvailable,
     });
   }
