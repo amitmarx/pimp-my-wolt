@@ -64,13 +64,19 @@
 
   async function handleMappingPayment() {
     const guests = await allGuests;
-    const { deliveryPrice, guestsOrders, orderTimestamp, restaurant } =
-      await fetchFromStorage(
-        "deliveryPrice",
-        "guestsOrders",
-        "orderTimestamp",
-        "restaurant"
-      );
+    const {
+      deliveryPrice,
+      guestsOrders,
+      orderTimestamp,
+      restaurant,
+      orderTableStringImage,
+    } = await fetchFromStorage(
+      "deliveryPrice",
+      "guestsOrders",
+      "orderTimestamp",
+      "restaurant",
+      "orderTableStringImage"
+    );
     if (orderTimestamp + 30 * 1000 < Date.now()) {
       return;
     }
@@ -117,11 +123,14 @@
     const debts = await asyncDebts;
     const settledGuests = await setGuestsDebts(debts);
     publishAutoSplitPaymentEvent({ settledGuests, guestsOrders: debts });
-    const autoPaymentDiv = document.querySelector(`#${automaticPaymentContent.divId}`);
-    autoPaymentDiv.innerHTML = '<span style="font-weight: bold;">מקווים שעזרנו... &#128521;</span>';
+    const autoPaymentDiv = document.querySelector(
+      `#${automaticPaymentContent.divId}`
+    );
+    autoPaymentDiv.innerHTML =
+      '<span style="font-weight: bold;">מקווים שעזרנו... &#128521;</span>';
   }
 
-  function getAutomaticContent({ settledGuests, guestDebts }) {
+  async function getAutomaticContent({ settledGuests, guestDebts }) {
     const leftToSplit = getSelectedCibusNames().length < guestDebts.length;
     const div = document.createElement("div");
     div.setAttribute("id", automaticPaymentContent.divId);
@@ -134,6 +143,7 @@
         : "";
     const splitSpan = document.createElement("span");
     splitSpan.appendChild(document.createTextNode(splitMessage));
+    div.appendChild(await getWoltTableImageElement());
     div.appendChild(splitSpan);
     div.appendChild(document.createElement("br"));
 
@@ -189,8 +199,19 @@
     setContent(loaderImage);
   }
 
-  function handleAutomaticPayment({ settledGuests, guestDebts }) {
-    const content = getAutomaticContent({ settledGuests, guestDebts });
+  async function getWoltTableImageElement() {
+    const { orderTableStringImage } = await fetchFromStorage(
+      "orderTableStringImage"
+    );
+    const tableImg = document.createElement("img");
+    tableImg.src = orderTableStringImage;
+    tableImg.width = "500";
+    tableImg.style = "position: fixed;right: 0;";
+    return tableImg;
+  }
+
+  async function handleAutomaticPayment({ settledGuests, guestDebts }) {
+    const content = await getAutomaticContent({ settledGuests, guestDebts });
     setContent(content);
   }
 
@@ -289,11 +310,11 @@
 
   setInterval(async () => {
     if (isPaymentButtonExists() && !isPaymentSettled()) {
-      setLoader()
+      setLoader();
       setPaymentSettled();
       openSplitPaymentTable();
       const { settledGuests, guestDebts } = await handleMappingPayment();
-      handleAutomaticPayment({ settledGuests, guestDebts });
+      await handleAutomaticPayment({ settledGuests, guestDebts });
     }
   }, 100);
 })();

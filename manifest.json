@@ -17,10 +17,10 @@
           "/src/ext/micromodal.css"
         ],
         "js": [
-          "/src/ext/micromodal.min.js",
-          "/src/group-manager.js",
-          "/src/bi-logger.js",
-          "/src/pimp-my-wolt.js"
+          "/dist/micromodal.js",
+          "/dist/group-manager.js",
+          "/dist/bi-logger.js",
+          "/dist/pimp-my-wolt.js"
         ],
         "matches": [
           "https://wolt.com/*"
@@ -31,9 +31,9 @@
           "/src/styles.css"
         ],
         "js": [
-          "/src/group-manager.js",
-          "/src/bi-logger.js",
-          "/src/pimp-my-cibus.js"
+          "/dist/group-manager.js",
+          "/dist/bi-logger.js",
+          "/dist/pimp-my-cibus.js"
         ],
         "matches": [
           "https://www.mysodexo.co.il/*"
