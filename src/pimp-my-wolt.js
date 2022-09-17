@@ -132,7 +132,7 @@
     return restaurant;
   }
 
-  function getTotalAmountPrice() {
+  function getTotalOrderPrice() {
     const amountWithCurrency = getElementWithText(
       "dl",
       totalText
@@ -184,7 +184,7 @@
       '[data-test-id="SendOrderButton"]'
     );
     sendOrderButton.onclick = () => {
-      const totalOrderPrice = getTotalAmountPrice();
+      const totalOrderPrice = getTotalOrderPrice();
       const guestsOrders = getGuestsOrders();
       const deliveryPrice = getDeliveryPrice();
       const restaurant = getRestuarant();

@@ -80,12 +80,12 @@
     if (orderTimestamp + 30 * 1000 < Date.now()) {
       return;
     }
-    const totalGuestPrice = guestsOrders.reduce(
+    const totalGuestsPrice = guestsOrders.reduce(
       (partialSum, guestOrder) => partialSum + guestOrder.price,
       0
     );
-    // Including delivery and tip.
-    const orderAdditionalCharge = totalOrderPrice - totalGuestPrice;
+    // Includes delivery and tip.
+    const orderAdditionalCharge = totalOrderPrice - totalGuestsPrice;
     const additionalChargePerGuest = Number(
       (orderAdditionalCharge / guestsOrders.length).toFixed(2)
     );
@@ -130,9 +130,7 @@
     const debts = await asyncDebts;
     const settledGuests = await setGuestsDebts(debts);
     publishAutoSplitPaymentEvent({ settledGuests, guestsOrders: debts });
-    const autoPaymentDiv = document.querySelector(
-      `#${automaticPaymentContent.divId}`
-    );
+    const autoPaymentDiv = document.querySelector(`#${automaticPaymentContent.divId}`);
     autoPaymentDiv.innerHTML =
       '<span style="font-weight: bold;">מקווים שעזרנו... &#128521;</span>';
   }
