@@ -1,3 +1,5 @@
+import html2canvas from "/node_modules/html2canvas/dist/html2canvas.min.js";
+
 (function () {
   const logoUrl = chrome.runtime.getURL(
     "assets/icons/pimp-my-wolt-icon-48.png"
@@ -68,6 +70,18 @@
 
   function getElementWithText(element, text) {
     return getElementsWithText(element, text)[0];
+  }
+
+  function getParticipantsTableElement() {
+    return getElementWithText("ul", readyText);
+  }
+
+  async function getParticipantsTableImageString() {
+    const tableElement = getParticipantsTableElement();
+    const canvas = await html2canvas(tableElement, {
+      ignoreElements: (el) => el.id.toLowerCase().includes("pimpmywolt"),
+    });
+    return canvas.toDataURL("image/png");
   }
 
   function getInviteAllBtn(teamName) {
@@ -174,16 +188,18 @@
     const sendOrderButton = document.querySelector(
       '[data-test-id="SendOrderButton"]'
     );
-    sendOrderButton.onclick = () => {
+    sendOrderButton.onclick = async () => {
       const guestsOrders = getGuestsOrders();
       const deliveryPrice = getDeliveryPrice();
       const restaurant = getRestuarant();
       const orderTimestamp = Date.now();
+      const orderTableStringImage = await getParticipantsTableImageString();
       chrome.storage.local.set({
         guestsOrders,
         deliveryPrice,
         orderTimestamp,
         restaurant,
+        orderTableStringImage,
       });
     };
     sendOrderButton.setAttribute(
@@ -370,7 +386,8 @@
     div.setAttribute("class", "action-button-pimpMyWolt");
     const woltName = li?.querySelector("span")?.innerText;
     div.textContent = "+";
-    div.onclick = () => {
+    div.onclick = async () => {
+      const str = await getParticipantsTableImageString();
       memberWoltName = woltName;
       document.querySelector("#add-member-name-pimpMyWolt").textContent =
         woltName;

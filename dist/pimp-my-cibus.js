@@ -1,3 +1,5 @@
+/******/ (() => { // webpackBootstrap
+var __webpack_exports__ = {};
 (function () {
   const logoUrl = chrome.runtime.getURL(
     "assets/icons/pimp-my-wolt-icon-128.png"
@@ -318,3 +320,6 @@
     }
   }, 100);
 })();
+
+/******/ })()
+;

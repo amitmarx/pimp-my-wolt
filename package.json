@@ -1,0 +1,26 @@
+{
+  "name": "pimp-my-wolt",
+  "version": "1.0.0",
+  "description": "My team uses Wolt every day for our lunch order.   We use Wolt's shared order and split the payment on Cibus.   Instead of manually splitting the payment on Cibus,   I've created this nice Chrome extension to achieve it automatically.",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "make": "npm run build && ./make.sh",
+    "watch": "npm run build -- --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amitmarx/pimp-my-wolt.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/amitmarx/pimp-my-wolt/issues"
+  },
+  "homepage": "https://github.com/amitmarx/pimp-my-wolt#readme",
+  "dependencies": {
+    "html2canvas": "^1.4.1",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
+  }
+}
