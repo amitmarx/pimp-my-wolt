@@ -79,6 +79,7 @@ import html2canvas from "/node_modules/html2canvas/dist/html2canvas.min.js";
   async function getParticipantsTableImageString() {
     const tableElement = getParticipantsTableElement();
     const canvas = await html2canvas(tableElement, {
+      // Removes the added elements from the image.
       ignoreElements: (el) => el.id.toLowerCase().includes("pimpmywolt"),
     });
     return canvas.toDataURL("image/png");
