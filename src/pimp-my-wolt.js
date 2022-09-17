@@ -388,7 +388,6 @@ import html2canvas from "/node_modules/html2canvas/dist/html2canvas.min.js";
     const woltName = li?.querySelector("span")?.innerText;
     div.textContent = "+";
     div.onclick = async () => {
-      const str = await getParticipantsTableImageString();
       memberWoltName = woltName;
       document.querySelector("#add-member-name-pimpMyWolt").textContent =
         woltName;
