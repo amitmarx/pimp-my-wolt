@@ -50,7 +50,7 @@
   };
   function getElementsWithText(element, text) {
     const result = [];
-    const xpath = `//${element}[.//*[contains(text(), "${text}")]]`;
+    const xpath = `//${element}[.//*[contains(text(), '${text}')]]`;
     const generator = document.evaluate(
       xpath,
       document,
