@@ -28,7 +28,6 @@
     ? "אנשים שאולי ירצו להזמין איתך"
     : "Suggested guests";
   const readyText = isHebrewWolt ? "מוכן" : "Ready";
-  const deliveryText = isHebrewWolt ? "משלוח" : "Delivery";
   const totalText = isHebrewWolt ? 'סה"כ' : "Total";
 
   const isInInviteGroupPage = () =>
@@ -140,14 +139,6 @@
     return priceToNumber(amountWithCurrency ?? "");
   }
 
-  function getDeliveryPrice() {
-    const amountWithCurrency = getElementWithText(
-      "dl",
-      deliveryText
-    )?.querySelector("dd")?.innerText;
-    return priceToNumber(amountWithCurrency ?? "");
-  }
-
   function priceToNumber(price) {
     if (typeof price !== "string") return 0;
     const maybeNumber = Number(price.replace(/[^0-9.-]+/g, ""));
@@ -186,13 +177,11 @@
     sendOrderButton.onclick = () => {
       const totalOrderPrice = getTotalOrderPrice();
       const guestsOrders = getGuestsOrders();
-      const deliveryPrice = getDeliveryPrice();
       const restaurant = getRestuarant();
       const orderTimestamp = Date.now();
       chrome.storage.local.set({
         totalOrderPrice,
         guestsOrders,
-        deliveryPrice,
         orderTimestamp,
         restaurant,
       });

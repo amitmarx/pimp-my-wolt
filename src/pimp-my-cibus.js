@@ -66,13 +66,11 @@
     const guests = await allGuests;
     const {
       totalOrderPrice,
-      deliveryPrice,
       guestsOrders,
       orderTimestamp,
       restaurant,
     } = await fetchFromStorage(
       "totalOrderPrice",
-      "deliveryPrice",
       "guestsOrders",
       "orderTimestamp",
       "restaurant"
@@ -104,7 +102,7 @@
       restaurant,
       settledGuests,
       guestsOrders,
-      deliveryPrice,
+      orderAdditionalCharge,
       totalOrderPrice,
     });
     return { settledGuests, guestDebts };
@@ -228,7 +226,7 @@
     restaurant,
     settledGuests,
     guestsOrders,
-    deliveryPrice,
+    orderAdditionalCharge,
     totalOrderPrice,
   }) {
     const allCibusUsersAvailable = getAllCibusNames();
@@ -241,7 +239,7 @@
       userName: currentUser,
       settledGuests,
       guestsOrders,
-      deliveryPrice,
+      orderAdditionalCharge,
       totalOrderPrice,
       allCibusUsersAvailable,
     });
