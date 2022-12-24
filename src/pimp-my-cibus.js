@@ -75,7 +75,7 @@
       "orderTimestamp",
       "restaurant"
     );
-    if (orderTimestamp + 30 * 1000 < Date.now()) {
+    if (orderTimestamp + 30 * 1000 < Date.now() || !guestsOrders.length) {
       return;
     }
     const totalGuestsPrice = guestsOrders.reduce(

@@ -132,11 +132,26 @@
   }
 
   function getTotalOrderPrice() {
-    const amountWithCurrency = getElementWithText(
-      "dl",
-      totalText
-    )?.querySelector("dd")?.innerText;
-    return priceToNumber(amountWithCurrency ?? "");
+    const subtotal = priceToNumber(
+      document
+        .querySelector('[data-test-id="Order.Subtotal"]')
+        ?.querySelector("dd")?.innerText
+    );
+    const delivery = priceToNumber(
+      document.querySelector('[data-test-id="order.checkout-delivery-default"]')
+        ?.innerText
+    );
+    const smallOrderFee = priceToNumber(
+      document
+        .querySelector('[data-test-id="Order.SmallOrderFee"]')
+        ?.querySelector("dd")?.innerText
+    );
+    const tip = priceToNumber(
+      document.querySelector('[data-test-id="OrderSummary.tipAmount"]')
+        ?.innerText
+    );
+
+    return subtotal + delivery + smallOrderFee + tip;
   }
 
   function priceToNumber(price) {
