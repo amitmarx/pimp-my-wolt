@@ -161,21 +161,15 @@
   }
 
   function getGuestsOrders() {
-    const orderTable = document.querySelector(
-      "[class^=Tabs-module__root] [class^=Tabs-module__content]"
-    );
-    const guestsLineItems = Array.from(
-      orderTable?.querySelectorAll("li") || []
-    );
+
+    const guestsLineItems = getElementsWithText("li", readyText);
 
     return guestsLineItems
       .map((item) => {
-        const name = item.querySelector(
-          '[class*="GuestItem-module__listName"] span'
-        )?.innerText;
-        const price = priceToNumber(
-          item.querySelector('[class*="GuestItem-module__price"]')?.innerText
-        );
+        const spans = [...item.querySelectorAll('span')].map(s => s.innerText);
+        const name = spans?.[0]
+        
+        const price = priceToNumber(spans?.find((s) => s.includes("₪")));
 
         return {
           name,
