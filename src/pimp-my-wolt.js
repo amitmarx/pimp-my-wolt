@@ -150,8 +150,13 @@
       document.querySelector('[data-test-id="OrderSummary.tipAmount"]')
         ?.innerText
     );
+    const serviceFee = priceToNumber(
+      document
+        .querySelector('[data-test-id="Order.ServiceFee"]')
+        ?.querySelector("dd")?.innerText
+    );
 
-    return subtotal + delivery + smallOrderFee + tip;
+    return subtotal + delivery + smallOrderFee + tip + serviceFee;
   }
 
   function priceToNumber(price) {
