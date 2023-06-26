@@ -14,13 +14,15 @@
       {
         "css": [
           "/src/styles.css",
-          "/src/ext/micromodal.css"
+          "/src/ext/micromodal.css",
+          "/src/randomizer/random.css"
         ],
         "js": [
           "/src/ext/micromodal.min.js",
           "/src/group-manager.js",
           "/src/bi-logger.js",
-          "/src/pimp-my-wolt.js"
+          "/src/pimp-my-wolt.js",
+          "/src/randomizer/category-random.js"
         ],
         "matches": [
           "https://wolt.com/*"
@@ -47,7 +49,8 @@
         "resources": [
           "/assets/loader.gif",
           "/assets/icons/pimp-my-wolt-icon-48.png",
-          "/assets/icons/pimp-my-wolt-icon-128.png"
+          "/assets/icons/pimp-my-wolt-icon-128.png",
+          "/assets/hungry_wheel.png"
         ],
         "matches": [
           "<all_urls>"

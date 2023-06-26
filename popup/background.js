@@ -1,4 +1,5 @@
 chrome.tabs.onUpdated.addListener((tabId, tab) => {
+    //TODO - Wait for Foodspar to see if they can help out with a order history API as this will be way more feasible.
      // call contentScript to fetch restaurants IDs to check if the customer has -
         //already ordered. (todo - check how to fetch the orders history,
          //maybe redirect quickly? or part of a setup? we'll see)
