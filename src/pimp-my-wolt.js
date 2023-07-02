@@ -1,4 +1,3 @@
-const pmwBL = require('./pmwBL.js');
 (function () {
   const logoUrl = chrome.runtime.getURL(
     "assets/icons/pimp-my-wolt-icon-48.png"
@@ -6,7 +5,7 @@ const pmwBL = require('./pmwBL.js');
 
   const { groupManager, biLogger } = window.pimpMyWolt;
   const { MicroModal } = window;
-
+  
   let allGuests;
   function refreshAllGuests() {
     allGuests = groupManager.getAllGuests();
@@ -39,7 +38,11 @@ const pmwBL = require('./pmwBL.js');
     Boolean(document.getElementById(buttonSettings.id));
   const isOrderButtonExists = () =>
     Boolean(document.querySelector('[data-test-id="SendOrderButton"]'));
-
+  
+    const isWheelButtonExists = () =>
+    Boolean(document.getElementById('wheel-button'));
+  const isInMainPage = () => 
+    Boolean(window.location.href.toLowerCase().includes('discovery'));
   const isOrderButtonUpdated = () => {
     const orderButton = document.querySelector(
       '[data-test-id="SendOrderButton"]'
@@ -75,9 +78,9 @@ const pmwBL = require('./pmwBL.js');
     const text = isHebrewWolt ? `הזמן את ${teamName}` : `Invite ${teamName}`;
 
     const onclick = async () => {
-      const { invitedGuests, notInvitedGuests } = await pmwBL.inviteAllGuests();
+      const { invitedGuests, notInvitedGuests } = await inviteAllGuests();
       biLogger.logEvent("invite_all_group", {
-        restaurant: pmwBL.getRestuarant(),
+        restaurant: getRestuarant(),
         invitedGuests,
         notInvitedGuests,
       });
@@ -107,7 +110,24 @@ const pmwBL = require('./pmwBL.js');
     return btn;
   }
 
-
+  async function inviteAllGuests() {
+    const guests = await allGuests;
+    const invitedGuests = [];
+    const notInvitedGuests = [];
+    for (guest of guests) {
+      const guestName = guest.woltName;
+      const inviteButton = getElementWithText("li", guestName)?.querySelector(
+        "button"
+      );
+      inviteButton?.click();
+      (inviteButton ? invitedGuests : notInvitedGuests).push(guestName);
+    }
+    return {
+      invitedGuests,
+      notInvitedGuests,
+    };
+  }
+  
   async function addInviteGroupButton() {
     const btn = await getBtn();
     const suggestedGuestsElement = getElementWithText(
@@ -115,6 +135,21 @@ const pmwBL = require('./pmwBL.js');
       suggestedGuestsText
     );
     suggestedGuestsElement.appendChild(btn);
+  }
+
+  function getRestuarant() {
+    const location = document?.location?.pathname;
+    const regex = /restaurant\/(.*)\//gm;
+    const restaurant = location?.matchAll(regex)?.next()?.value?.[1];
+    return restaurant;
+  }
+
+  function getTotalOrderPrice() {
+    const amountWithCurrency = getElementWithText(
+      "dl",
+      totalText
+    )?.querySelector("dd")?.innerText;
+    return priceToNumber(amountWithCurrency ?? "");
   }
 
   function addSetGroupModal() {
@@ -159,6 +194,59 @@ const pmwBL = require('./pmwBL.js');
       };
       document.getElementById("set_team_name_btn").onclick = onclick;
     }
+  }
+
+  function priceToNumber(price) {
+    if (typeof price !== "string") return 0;
+    const maybeNumber = Number(price.replace(/[^0-9.-]+/g, ""));
+    return isNaN(maybeNumber) ? 0 : maybeNumber;
+  }
+
+  function getGuestsOrders() {
+    const orderTable = document.querySelector(
+      "[class^=Tabs-module__root] [class^=Tabs-module__content]"
+    );
+    const guestsLineItems = Array.from(
+      orderTable?.querySelectorAll("li") || []
+    );
+
+    return guestsLineItems
+      .map((item) => {
+        const name = item.querySelector(
+          '[class*="GuestItem-module__listName"] span'
+        )?.innerText;
+        const price = priceToNumber(
+          item.querySelector('[class*="GuestItem-module__price"]')?.innerText
+        );
+
+        return {
+          name,
+          price,
+        };
+      })
+      .filter((guest) => guest.name && guest.price);
+  }
+
+  function updateOrderButtonToSaveGuestsOrders() {
+    const sendOrderButton = document.querySelector(
+      '[data-test-id="SendOrderButton"]'
+    );
+    sendOrderButton.onclick = () => {
+      const totalOrderPrice = getTotalOrderPrice();
+      const guestsOrders = getGuestsOrders();
+      const restaurant = getRestuarant();
+      const orderTimestamp = Date.now();
+      chrome.storage.local.set({
+        totalOrderPrice,
+        guestsOrders,
+        orderTimestamp,
+        restaurant,
+      });
+    };
+    sendOrderButton.setAttribute(
+      orderButtonHookSettings.saveOrdersAttribute,
+      "true"
+    );
   }
 
   function addMemberSetupModal() {
@@ -325,22 +413,80 @@ const pmwBL = require('./pmwBL.js');
     }
   }
 
+  function addWheelButton() {
+    let src = chrome.runtime.getURL("/assets/hungry_wheel.png");
+    let btnDiv = document.createElement("div");
+    btnDiv.id = "wheel-button";
+    btnDiv.tabIndex = "0";
+    btnDiv.style.backgroundImage = "url('" + src + "')";
+    btnDiv.classList.add('wheel-button', 'brand_item', 'hover_btn');
+    isHebrewWolt? (btnDiv.setAttribute("data-tooltip",  `לא יודעים מה להזמין עדיין?`)) :
+    (btnDiv.setAttribute("data-tooltip",  `Don't know what to order yet?`));
+
+    btnDiv.onclick = () => MicroModal.show('modal-random');
+    const woltMainBar = document.querySelector('div.sc-7d7c6c58-1.gjijOf div.sc-7d7c6c58-5.ldWo');
+    woltMainBar.insertAdjacentElement("afterbegin", btnDiv);
+  }
+
+   function addCategoryModal() {
+    if (!document.querySelector("#modal-random")) {
+      const modalDiv = `<div class="modal micromodal-slide modal-pimpMyWolt" id="modal-random" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+      <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-random-title">
+      <div id="wheelOfFortune">
+      <canvas id="wheel" width="300" height="300"></canvas>
+      <div id="spin">SPIN</div>
+      </div>
+        <footer class="modal__footer">
+          <button id="order-btn" class="modal__btn modal-buttons-pimpMyWolt modal__btn-primary" aria-label="Close this dialog window">Ok, let's order</button>
+        </footer>
+      </div>
+    </div>
+  </div>`;
+
+  const styleTag = document.createElement("link");
+    styleTag.rel = "stylesheet";
+    styleTag.href = chrome.runtime.getURL("/src/wheel/wheelstyle.css");
+
+    const scriptTag = document.createElement("script");
+    scriptTag.src = chrome.runtime.getURL("/src/wheel/wheel-index.js");
+
+    const modalContainer = document.createElement("div");
+    modalContainer.innerHTML = modalDiv;
+    modalContainer.appendChild(styleTag);
+    modalContainer.appendChild(scriptTag);
+
+    document.querySelector("body").appendChild(modalContainer);
+  const onClick = () => {
+    const text = document.getElementById('spin').getAttribute('data-last-label');
+    linkRef = isHebrewWolt? (`https://wolt.com/he/search?q=${text}`) : (`https://wolt.com/en/search?q=${text}`);
+    window.open(linkRef, '_blank'); //!! Route it instead of opening a new window. 
+    MicroModal.close();
+  };
+  document.getElementById("order-btn").onclick = onClick;
+  } 
+}
+
   function addModals() {
     addSetGroupModal();
     addMemberSetupModal();
     addMemberRemovalModal();
-    generateCategoryModal(); //TODO - Write this function 
+    addCategoryModal();
   }
 
   setInterval(async () => {
     addModals();
+
+    if (!isWheelButtonExists() && isInMainPage()) { 
+      addWheelButton();
+    }
 
     if (!isInviteGroupButtonExists() && isInInviteGroupPage()) {
       addInviteGroupButton();
     }
 
     if (isOrderButtonExists() && !isOrderButtonUpdated()) {
-      pmwBL.updateOrderButtonToSaveGuestsOrders();
+      updateOrderButtonToSaveGuestsOrders();
     }
 
     if (
