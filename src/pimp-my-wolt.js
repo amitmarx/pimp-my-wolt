@@ -3,9 +3,9 @@
     "assets/icons/pimp-my-wolt-icon-48.png"
   );
 
-  const { groupManager, biLogger } = window.pimpMyWolt;
+  const { groupManager, biLogger, wheel } = window.pimpMyWolt;
   const { MicroModal } = window;
-  
+
   let allGuests;
   function refreshAllGuests() {
     allGuests = groupManager.getAllGuests();
@@ -17,6 +17,10 @@
   const buttonSettings = {
     id: "invite-group-button-pimpMyWolt",
     text: "Invite Noname",
+  };
+
+  const wheelButtonSettings = {
+    id: "wheel-button-pimpMyWolt",
   };
 
   const orderButtonHookSettings = {
@@ -38,11 +42,11 @@
     Boolean(document.getElementById(buttonSettings.id));
   const isOrderButtonExists = () =>
     Boolean(document.querySelector('[data-test-id="SendOrderButton"]'));
-  
-    const isWheelButtonExists = () =>
-    Boolean(document.getElementById('wheel-button'));
-  const isInMainPage = () => 
-    Boolean(window.location.href.toLowerCase().includes('discovery'));
+
+  const isWheelButtonExists = () =>
+    Boolean(document.getElementById(wheelButtonSettings.id));
+  const isInMainPage = () =>
+    Boolean(window.location.href.toLowerCase().includes("discovery"));
   const isOrderButtonUpdated = () => {
     const orderButton = document.querySelector(
       '[data-test-id="SendOrderButton"]'
@@ -52,6 +56,14 @@
       "true"
     );
   };
+  
+  async function publishWheelOfLuckModalOpen() {
+    biLogger.logEvent("wheel_of_luck_modal_open", {});
+  }
+  async function publishWheelOfLuckCategoryOpen({category}) {
+    biLogger.logEvent("wheel_of_luck_category_open", { category });
+  }
+
   function getElementsWithText(element, text) {
     const result = [];
     const xpath = `//${element}[.//*[contains(text(), '${text}')]]`;
@@ -127,7 +139,7 @@
       notInvitedGuests,
     };
   }
-  
+
   async function addInviteGroupButton() {
     const btn = await getBtn();
     const suggestedGuestsElement = getElementWithText(
@@ -223,14 +235,15 @@
   }
 
   function getGuestsOrders() {
-
     const guestsLineItems = getElementsWithText("li", readyText);
 
     return guestsLineItems
       .map((item) => {
-        const spans = [...item.querySelectorAll('span')].map(s => s.innerText);
-        const name = spans?.[0]
-        
+        const spans = [...item.querySelectorAll("span")].map(
+          (s) => s.innerText
+        );
+        const name = spans?.[0];
+
         const price = priceToNumber(spans?.find((s) => s.includes("₪")));
 
         return {
@@ -430,56 +443,67 @@
   function addWheelButton() {
     let src = chrome.runtime.getURL("/assets/hungry_wheel.png");
     let btnDiv = document.createElement("div");
-    btnDiv.id = "wheel-button";
+    btnDiv.id = wheelButtonSettings.id;
     btnDiv.tabIndex = "0";
     btnDiv.style.backgroundImage = "url('" + src + "')";
-    btnDiv.classList.add('wheel-button', 'brand_item', 'hover_btn');
-    isHebrewWolt? (btnDiv.setAttribute("data-tooltip",  `לא יודעים מה להזמין עדיין?`)) :
-    (btnDiv.setAttribute("data-tooltip",  `Don't know what to order yet?`));
+    btnDiv.classList.add(wheelButtonSettings.id, "brand_item", "hover_btn");
 
-    btnDiv.onclick = () => MicroModal.show('modal-random');
-    const woltMainBar = document.querySelector('div.sc-7d7c6c58-1.gjijOf div.sc-7d7c6c58-5.ldWo');
-    woltMainBar.insertAdjacentElement("afterbegin", btnDiv);
+    const tooltipText = isHebrewWolt
+      ? `לא יודעים מה להזמין עדיין?`
+      : `Don't know what to order yet?`;
+    btnDiv.setAttribute("data-tooltip", tooltipText);
+
+    btnDiv.onclick = () => {
+      MicroModal.show("modal-random");
+      publishWheelOfLuckModalOpen()
+    }
+    const woltMainBar = getWoltMainBar();
+    woltMainBar?.insertAdjacentElement("afterbegin", btnDiv);
   }
 
-   function addCategoryModal() {
+  function getWoltMainBar() {
+    const profileImage = document.querySelector(
+      '[data-test-id="UserStatus.ProfileImage"]'
+    );
+    const profileImageButton = profileImage?.parentElement;
+    const profileImageDiv = profileImageButton?.parentElement;
+    return profileImageDiv?.parentElement;
+  }
+
+  function addCategoryModal() {
     if (!document.querySelector("#modal-random")) {
       const modalDiv = `<div class="modal micromodal-slide modal-pimpMyWolt" id="modal-random" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1" data-micromodal-close>
       <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-random-title">
       <div id="wheelOfFortune">
       <canvas id="wheel" width="300" height="300"></canvas>
-      <div id="spin">SPIN</div>
+      <div id="spin-pimpMyWolt">SPIN</div>
       </div>
         <footer class="modal__footer">
-          <button id="order-btn" class="modal__btn modal-buttons-pimpMyWolt modal__btn-primary" aria-label="Close this dialog window">Ok, let's order</button>
+          <button id="order-btn-pimpMyWolt" class="modal__btn modal-buttons-pimpMyWolt modal__btn-primary disabled-pimpMyWolt" aria-label="Close this dialog window">Ok, let's order</button>
         </footer>
       </div>
     </div>
   </div>`;
 
-  const styleTag = document.createElement("link");
-    styleTag.rel = "stylesheet";
-    styleTag.href = chrome.runtime.getURL("/src/wheel/wheelstyle.css");
-
-    const scriptTag = document.createElement("script");
-    scriptTag.src = chrome.runtime.getURL("/src/wheel/wheel-index.js");
-
-    const modalContainer = document.createElement("div");
-    modalContainer.innerHTML = modalDiv;
-    modalContainer.appendChild(styleTag);
-    modalContainer.appendChild(scriptTag);
-
-    document.querySelector("body").appendChild(modalContainer);
-  const onClick = () => {
-    const text = document.getElementById('spin').getAttribute('data-last-label');
-    linkRef = isHebrewWolt? (`https://wolt.com/he/search?q=${text}`) : (`https://wolt.com/en/search?q=${text}`);
-    window.open(linkRef, '_blank'); //!! Route it instead of opening a new window. 
-    MicroModal.close();
-  };
-  document.getElementById("order-btn").onclick = onClick;
-  } 
-}
+      const modalContainer = document.createElement("div");
+      modalContainer.innerHTML = modalDiv;
+      document.querySelector("body").appendChild(modalContainer);
+      wheel.init();
+      const onClick = () => {
+        const text = document
+          .getElementById("spin-pimpMyWolt")
+          .getAttribute("data-last-label");
+        linkRef = isHebrewWolt
+          ? `https://wolt.com/he/search?q=${text}`
+          : `https://wolt.com/en/search?q=${text}`;
+          publishWheelOfLuckCategoryOpen({category: text})
+        window.open(linkRef, "_blank");
+        MicroModal.close();
+      };
+      document.getElementById("order-btn-pimpMyWolt").onclick = onClick;
+    }
+  }
 
   function addModals() {
     addSetGroupModal();
@@ -491,7 +515,7 @@
   setInterval(async () => {
     addModals();
 
-    if (!isWheelButtonExists() && isInMainPage()) { 
+    if (!isWheelButtonExists() && isInMainPage()) {
       addWheelButton();
     }
 
