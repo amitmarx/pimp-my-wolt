@@ -5,7 +5,7 @@
 
   const { groupManager, biLogger } = window.pimpMyWolt;
   const { MicroModal } = window;
-
+  
   let allGuests;
   function refreshAllGuests() {
     allGuests = groupManager.getAllGuests();
@@ -38,7 +38,11 @@
     Boolean(document.getElementById(buttonSettings.id));
   const isOrderButtonExists = () =>
     Boolean(document.querySelector('[data-test-id="SendOrderButton"]'));
-
+  
+    const isWheelButtonExists = () =>
+    Boolean(document.getElementById('wheel-button'));
+  const isInMainPage = () => 
+    Boolean(window.location.href.toLowerCase().includes('discovery'));
   const isOrderButtonUpdated = () => {
     const orderButton = document.querySelector(
       '[data-test-id="SendOrderButton"]'
@@ -123,6 +127,15 @@
       notInvitedGuests,
     };
   }
+  
+  async function addInviteGroupButton() {
+    const btn = await getBtn();
+    const suggestedGuestsElement = getElementWithText(
+      "h3",
+      suggestedGuestsText
+    );
+    suggestedGuestsElement.appendChild(btn);
+  }
 
   function getRestuarant() {
     const location = document?.location?.pathname;
@@ -157,6 +170,50 @@
     );
 
     return subtotal + delivery + smallOrderFee + tip + serviceFee;
+  }
+
+  function addSetGroupModal() {
+    if (!document.querySelector("#modal-add-group")) {
+      const modalHtml = ` <div class="modal micromodal-slide modal-pimpMyWolt" id="modal-add-group" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+      <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-add-group-title">
+        <header class="modal__header modal-header-pimpMyWolt">
+          <img src="${logoUrl}"/>
+          <h2 class="modal__title" id="modal-add-group-title">
+            Set Group Name
+          </h2>
+        </header>
+        <main id="modal-add-group-content">
+          <p>
+          Please set your group name.  <br/>
+          <ul>
+            <li class="little-letters-pimpMyWolt">You can always change your group on<br/>
+                <b>Pimp my Wolt</b> extension options.</li>  
+            <li class="little-letters-pimpMyWolt">Adding members to your group is <br/>
+                available on order checkout.</li>
+           </ul>
+          </p>
+          <p>
+            <input id="pimp_my_wolt__name" class="pimp_my_wolt__input"/>
+          </p>
+        </main>
+        <footer class="modal__footer">
+          <button class="modal__btn modal-buttons-pimpMyWolt" data-micromodal-close aria-label="Close this dialog window">Cancel</button>
+          <button class="modal__btn modal-buttons-pimpMyWolt modal__btn-primary" id="set_team_name_btn">Confirm</button>
+        </footer>
+      </div>
+    </div>
+  </div>`;
+      document.querySelector("body").insertAdjacentHTML("beforeend", modalHtml);
+      const onclick = async () => {
+        const teamName = document.getElementById("pimp_my_wolt__name").value;
+        await groupManager.setTeamName(teamName);
+        refreshAllGuests();
+        MicroModal.close();
+        document.getElementById(buttonSettings.id).remove();
+      };
+      document.getElementById("set_team_name_btn").onclick = onclick;
+    }
   }
 
   function priceToNumber(price) {
@@ -204,59 +261,6 @@
       orderButtonHookSettings.saveOrdersAttribute,
       "true"
     );
-  }
-
-  async function addInviteGroupButton() {
-    const btn = await getBtn();
-    const suggestedGuestsElement = getElementWithText(
-      "h3",
-      suggestedGuestsText
-    );
-    suggestedGuestsElement.appendChild(btn);
-  }
-
-  function addSetGroupModal() {
-    if (!document.querySelector("#modal-add-group")) {
-      const modalHtml = ` <div class="modal micromodal-slide modal-pimpMyWolt" id="modal-add-group" aria-hidden="true">
-    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
-      <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-add-group-title">
-        <header class="modal__header modal-header-pimpMyWolt">
-          <img src="${logoUrl}"/>
-          <h2 class="modal__title" id="modal-add-group-title">
-            Set Group Name
-          </h2>
-        </header>
-        <main id="modal-add-group-content">
-          <p>
-          Please set your group name.  <br/>
-          <ul>
-            <li class="little-letters-pimpMyWolt">You can always change your group on<br/>
-                <b>Pimp my Wolt</b> extension options.</li>  
-            <li class="little-letters-pimpMyWolt">Adding members to your group is <br/>
-                available on order checkout.</li>
-           </ul>
-          </p>
-          <p>
-            <input id="pimp_my_wolt__name" class="pimp_my_wolt__input"/>
-          </p>
-        </main>
-        <footer class="modal__footer">
-          <button class="modal__btn modal-buttons-pimpMyWolt" data-micromodal-close aria-label="Close this dialog window">Cancel</button>
-          <button class="modal__btn modal-buttons-pimpMyWolt modal__btn-primary" id="set_team_name_btn">Confirm</button>
-        </footer>
-      </div>
-    </div>
-  </div>`;
-      document.querySelector("body").insertAdjacentHTML("beforeend", modalHtml);
-      const onclick = async () => {
-        const teamName = document.getElementById("pimp_my_wolt__name").value;
-        await groupManager.setTeamName(teamName);
-        refreshAllGuests();
-        MicroModal.close();
-        document.getElementById(buttonSettings.id).remove();
-      };
-      document.getElementById("set_team_name_btn").onclick = onclick;
-    }
   }
 
   function addMemberSetupModal() {
@@ -423,14 +427,73 @@
     }
   }
 
+  function addWheelButton() {
+    let src = chrome.runtime.getURL("/assets/hungry_wheel.png");
+    let btnDiv = document.createElement("div");
+    btnDiv.id = "wheel-button";
+    btnDiv.tabIndex = "0";
+    btnDiv.style.backgroundImage = "url('" + src + "')";
+    btnDiv.classList.add('wheel-button', 'brand_item', 'hover_btn');
+    isHebrewWolt? (btnDiv.setAttribute("data-tooltip",  `לא יודעים מה להזמין עדיין?`)) :
+    (btnDiv.setAttribute("data-tooltip",  `Don't know what to order yet?`));
+
+    btnDiv.onclick = () => MicroModal.show('modal-random');
+    const woltMainBar = document.querySelector('div.sc-7d7c6c58-1.gjijOf div.sc-7d7c6c58-5.ldWo');
+    woltMainBar.insertAdjacentElement("afterbegin", btnDiv);
+  }
+
+   function addCategoryModal() {
+    if (!document.querySelector("#modal-random")) {
+      const modalDiv = `<div class="modal micromodal-slide modal-pimpMyWolt" id="modal-random" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+      <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-random-title">
+      <div id="wheelOfFortune">
+      <canvas id="wheel" width="300" height="300"></canvas>
+      <div id="spin">SPIN</div>
+      </div>
+        <footer class="modal__footer">
+          <button id="order-btn" class="modal__btn modal-buttons-pimpMyWolt modal__btn-primary" aria-label="Close this dialog window">Ok, let's order</button>
+        </footer>
+      </div>
+    </div>
+  </div>`;
+
+  const styleTag = document.createElement("link");
+    styleTag.rel = "stylesheet";
+    styleTag.href = chrome.runtime.getURL("/src/wheel/wheelstyle.css");
+
+    const scriptTag = document.createElement("script");
+    scriptTag.src = chrome.runtime.getURL("/src/wheel/wheel-index.js");
+
+    const modalContainer = document.createElement("div");
+    modalContainer.innerHTML = modalDiv;
+    modalContainer.appendChild(styleTag);
+    modalContainer.appendChild(scriptTag);
+
+    document.querySelector("body").appendChild(modalContainer);
+  const onClick = () => {
+    const text = document.getElementById('spin').getAttribute('data-last-label');
+    linkRef = isHebrewWolt? (`https://wolt.com/he/search?q=${text}`) : (`https://wolt.com/en/search?q=${text}`);
+    window.open(linkRef, '_blank'); //!! Route it instead of opening a new window. 
+    MicroModal.close();
+  };
+  document.getElementById("order-btn").onclick = onClick;
+  } 
+}
+
   function addModals() {
     addSetGroupModal();
     addMemberSetupModal();
     addMemberRemovalModal();
+    addCategoryModal();
   }
 
   setInterval(async () => {
     addModals();
+
+    if (!isWheelButtonExists() && isInMainPage()) { 
+      addWheelButton();
+    }
 
     if (!isInviteGroupButtonExists() && isInInviteGroupPage()) {
       addInviteGroupButton();

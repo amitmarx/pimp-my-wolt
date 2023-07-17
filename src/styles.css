@@ -79,3 +79,31 @@
     font-size: small;
     color: gray;
 }
+
+.wheel-button {
+    width: 35px;
+    height: 35px;
+    background-origin: content-box;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    margin-right: 16px;
+  }
+  
+  .wheel-button:hover {
+    transform: scale(0.9);
+  }
+  
+  .brand__item {
+    border-radius: 50%;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: all .3s ease;
+    cursor: pointer;
+  }
+  
+  .brand__item:hover {
+    box-shadow: 0 0 0 1px rgba(156, 156, 156, 0.6);
+    background-color: rgba(156, 156, 156, 0.6);
+  }
+  

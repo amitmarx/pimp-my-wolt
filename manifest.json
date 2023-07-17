@@ -4,7 +4,7 @@
     "description": "Boost wolt up 🚀",
     "manifest_version": 3,
     "permissions": [
-      "storage"
+      "storage", "tabs"
     ],
     "options_ui": {
       "page": "/src/set-team-page.html",
@@ -22,9 +22,7 @@
           "/src/bi-logger.js",
           "/src/pimp-my-wolt.js"
         ],
-        "matches": [
-          "https://wolt.com/*"
-        ]
+        "matches": ["https://wolt.com/*"]
       },
       {
         "css": [
@@ -47,7 +45,10 @@
         "resources": [
           "/assets/loader.gif",
           "/assets/icons/pimp-my-wolt-icon-48.png",
-          "/assets/icons/pimp-my-wolt-icon-128.png"
+          "/assets/icons/pimp-my-wolt-icon-128.png",
+          "/assets/hungry_wheel.png",
+          "src/wheel/wheelstyle.css",
+          "src/wheel/wheel-index.js"
         ],
         "matches": [
           "<all_urls>"
@@ -62,5 +63,13 @@
       "24": "/assets/icons/pimp-my-wolt-icon-24.png",
       "48": "/assets/icons/pimp-my-wolt-icon-48.png",
       "128": "/assets/icons/pimp-my-wolt-icon-128.png"
+    },
+    "action": {
+      "default_icon": {
+        "16": "/assets/icons/pimp-my-wolt-icon-16.png",
+        "24": "/assets/icons/pimp-my-wolt-icon-24.png",
+        "48": "/assets/icons/pimp-my-wolt-icon-48.png"
+      },
+      "default_title": "Pimp My Wolt"
     }
   }
