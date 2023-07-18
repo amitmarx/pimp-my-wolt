@@ -88,6 +88,7 @@
     background-repeat: no-repeat;
     background-size: contain;
     margin-right: 16px;
+    cursor: pointer;
   }
   
   .wheel-button-pimpMyWolt:hover {
