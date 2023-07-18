@@ -1,77 +1,79 @@
-  {
-    "name": "Pimp my Wolt",
-    "version": "1.0.17",
-    "description": "Boost wolt up 🚀",
-    "manifest_version": 3,
-    "permissions": [
-      "storage"
-    ],
-    "options_ui": {
-      "page": "/src/set-team-page.html",
-      "open_in_tab": false
+{
+  "name": "Pimp my Wolt",
+  "version": "1.0.18",
+  "description": "Boost wolt up 🚀",
+  "manifest_version": 3,
+  "permissions": [
+    "storage"
+  ],
+  "options_ui": {
+    "page": "/src/set-team-page.html",
+    "open_in_tab": false
+  },
+  "content_scripts": [
+    {
+      "css": [
+        "/src/styles.css",
+        "/src/ext/micromodal.css",
+        "/src/wheel/wheelstyle.css"
+      ],
+      "js": [
+        "/src/ext/micromodal.min.js",
+        "/src/group-manager.js",
+        "/src/bi-logger.js",
+        "/src/wheel/wheel-index.js",
+        "/src/pimp-my-wolt.js"
+      ],
+      "matches": [
+        "https://wolt.com/*"
+      ]
     },
-    "content_scripts": [
-      {
-        "css": [
-          "/src/styles.css",
-          "/src/ext/micromodal.css",
-          "/src/wheel/wheelstyle.css"
-        ],
-        "js": [
-          "/src/ext/micromodal.min.js",
-          "/src/group-manager.js",
-          "/src/bi-logger.js",
-          "/src/wheel/wheel-index.js",
-          "/src/pimp-my-wolt.js"
-        ],
-        "matches": ["https://wolt.com/*"]
-      },
-      {
-        "css": [
-          "/src/styles.css"
-        ],
-        "js": [
-          "/src/group-manager.js",
-          "/src/bi-logger.js",
-          "/src/pimp-my-cibus.js"
-        ],
-        "matches": [
-          "https://www.mysodexo.co.il/*"
-        ],
-        "all_frames": true,
-        "match_about_blank": true
-      }
-    ],
-    "web_accessible_resources": [
-      {
-        "resources": [
-          "/assets/loader.gif",
-          "/assets/icons/pimp-my-wolt-icon-48.png",
-          "/assets/icons/pimp-my-wolt-icon-128.png",
-          "/assets/hungry_wheel.png",
-          "src/wheel/wheelstyle.css",
-          "src/wheel/wheel-index.js"
-        ],
-        "matches": [
-          "<all_urls>"
-        ],
-        "extension_ids": [
-          "edfemdoibbcbmkojfdeldnllcbnpmfld"
-        ]
-      }
-    ],
-    "icons": {
+    {
+      "css": [
+        "/src/styles.css"
+      ],
+      "js": [
+        "/src/group-manager.js",
+        "/src/bi-logger.js",
+        "/src/pimp-my-cibus.js"
+      ],
+      "matches": [
+        "https://www.mysodexo.co.il/*"
+      ],
+      "all_frames": true,
+      "match_about_blank": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "/assets/loader.gif",
+        "/assets/icons/pimp-my-wolt-icon-48.png",
+        "/assets/icons/pimp-my-wolt-icon-128.png",
+        "/assets/hungry_wheel.png",
+        "src/wheel/wheelstyle.css",
+        "src/wheel/wheel-index.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ],
+      "extension_ids": [
+        "edfemdoibbcbmkojfdeldnllcbnpmfld"
+      ]
+    }
+  ],
+  "icons": {
+    "16": "/assets/icons/pimp-my-wolt-icon-16.png",
+    "24": "/assets/icons/pimp-my-wolt-icon-24.png",
+    "48": "/assets/icons/pimp-my-wolt-icon-48.png",
+    "128": "/assets/icons/pimp-my-wolt-icon-128.png"
+  },
+  "action": {
+    "default_icon": {
       "16": "/assets/icons/pimp-my-wolt-icon-16.png",
       "24": "/assets/icons/pimp-my-wolt-icon-24.png",
-      "48": "/assets/icons/pimp-my-wolt-icon-48.png",
-      "128": "/assets/icons/pimp-my-wolt-icon-128.png"
+      "48": "/assets/icons/pimp-my-wolt-icon-48.png"
     },
-    "action": {
-      "default_icon": {
-        "16": "/assets/icons/pimp-my-wolt-icon-16.png",
-        "24": "/assets/icons/pimp-my-wolt-icon-24.png",
-        "48": "/assets/icons/pimp-my-wolt-icon-48.png"
-      },
-      "default_title": "Pimp My Wolt"
-    }
+    "default_title": "Pimp My Wolt"
   }
+}
