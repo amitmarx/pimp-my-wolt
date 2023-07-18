@@ -507,19 +507,22 @@
 
       const modalContainer = document.createElement("div");
       modalContainer.innerHTML = modalDiv;
+      
       document.querySelector("body").appendChild(modalContainer);
       wheel.init();
+
       const onClick = () => {
         const text = document
           .getElementById("spin-pimpMyWolt")
           .getAttribute("data-last-label");
-        linkRef = isHebrewWolt
+        const linkRef = isHebrewWolt
           ? `https://wolt.com/he/search?q=${text}`
           : `https://wolt.com/en/search?q=${text}`;
           publishWheelOfLuckCategoryOpen({category: text})
         window.open(linkRef, "_blank");
         MicroModal.close();
       };
+      
       document.getElementById("order-btn-pimpMyWolt").onclick = onClick;
     }
   }
