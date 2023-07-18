@@ -461,7 +461,7 @@
     woltMainBar?.insertAdjacentElement("afterbegin", btnDiv);
   }
 
-  function getWoltMainBar() {
+  function getWoltMainBarForLoggedInUser() {
     const profileImage = document.querySelector(
       '[data-test-id="UserStatus.ProfileImage"]'
     );
@@ -469,12 +469,31 @@
     const profileImageDiv = profileImageButton?.parentElement;
     return profileImageDiv?.parentElement;
   }
+  
+  function getWoltMainBarForLoggedOutUser() {
+    const signupButton = document.querySelector(
+      '[data-test-id="UserStatus.Signup"]'
+    );
+    const signupDiv = signupButton?.parentElement;
+    const loginDiv = signupDiv?.parentElement;
+    return loginDiv?.parentElement;
+  }
+
+  function getWoltMainBar() {
+    return getWoltMainBarForLoggedInUser() || getWoltMainBarForLoggedOutUser();
+  }
 
   function addCategoryModal() {
     if (!document.querySelector("#modal-random")) {
       const modalDiv = `<div class="modal micromodal-slide modal-pimpMyWolt" id="modal-random" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1" data-micromodal-close>
-      <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-random-title">
+    <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-random-title">
+    <header class="modal__header modal-header-pimpMyWolt">
+          <img src="${logoUrl}"/>
+          <h2 class="modal__title" id="modal-add-group-title">
+            I'm Feeling Lucky
+          </h2>
+        </header>
       <div id="wheelOfFortune">
       <canvas id="wheel" width="300" height="300"></canvas>
       <div id="spin-pimpMyWolt">SPIN</div>
