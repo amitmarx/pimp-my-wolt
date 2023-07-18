@@ -1,3 +1,4 @@
+const { biLogger } = window.pimpMyWolt;
 const sectors = [
   { color: '#f82', label: 'Mexican' },
   { color: '#0bf', label: 'Indian' },
@@ -8,82 +9,91 @@ const sectors = [
   { color: '#bf0', label: 'Ethiopian' }
 ]
 
-const rand = (m, M) => Math.random() * (M - m) + m
-const tot = sectors.length
-const spinEl = document.querySelector('#spin')
-const ctx = document.querySelector('#wheel').getContext('2d')
-const dia = ctx.canvas.width
-const rad = dia / 2
-const PI = Math.PI
-const TAU = 2 * PI
-const arc = TAU / sectors.length
 
-const friction = 0.991 // 0.995=soft, 0.99=mid, 0.98=hard
-let angVel = 0 // Angular velocity
-let ang = 0 // Angle in radians
-let lastLabel = '';
 
-const getIndex = () => Math.floor(tot - (ang / TAU) * tot) % tot
-
-function drawSector(sector, i) {
-  const ang = arc * i
-  ctx.save()
-  // COLOR
-  ctx.beginPath()
-  ctx.fillStyle = sector.color
-  ctx.moveTo(rad, rad)
-  ctx.arc(rad, rad, rad, ang, ang + arc)
-  ctx.lineTo(rad, rad)
-  ctx.fill()
-  // TEXT
-  ctx.translate(rad, rad)
-  ctx.rotate(ang + arc / 2)
-  ctx.textAlign = 'right'
-  ctx.fillStyle = '#fff'
-  ctx.font = 'bold 25px sans-serif'
-  ctx.fillText(sector.label, rad - 10, 10)
-  //
-  ctx.restore()
-}
-
-function rotate() {
-  const sector = sectors[getIndex()]
-  ctx.canvas.style.transform = `rotate(${ang - PI / 2}rad)`
-  spinEl.textContent = !angVel ? lastLabel !== ''? lastLabel : 'SPIN' : sector.label;
-
-  if (!angVel && lastLabel !== '') {
-      setTimeout(() => {
-        spinEl.textContent = 'SPIN';
-      }, 2000);
-    }
-
-  spinEl.style.background = sector.color;
-  lastLabel = sector.label;
-}
-
-function frame() {
-  if (!angVel) return
-  angVel *= friction // Decrement velocity by friction
-  if (angVel < 0.002) angVel = 0 // Bring to stop
-  ang += angVel // Update angle
-  ang %= TAU // Normalize angle
-  rotate()
-
-  if (angVel === 0) {
-      // The spin has stopped, you can access the last displayed label here
-      console.log('Last label:', lastLabel);
-      var spinDiv = document.getElementById("spin");
-      spinDiv.textContent = lastLabel;
-      spinDiv.setAttribute('data-last-label', lastLabel);
-  }
-}
-
-function engine() {
-  frame()
-  requestAnimationFrame(engine)
-}
 
 function init() {
+  const getIndex = () => Math.floor(tot - (ang / TAU) * tot) % tot
+
+  async function publishSpinCategory({category}) {
+    biLogger.logEvent("wheel_of_luck_spin", {category});
+  }
+
+  function drawSector(sector, i) {
+    const ang = arc * i
+    ctx.save()
+    // COLOR
+    ctx.beginPath()
+    ctx.fillStyle = sector.color
+    ctx.moveTo(rad, rad)
+    ctx.arc(rad, rad, rad, ang, ang + arc)
+    ctx.lineTo(rad, rad)
+    ctx.fill()
+    // TEXT
+    ctx.translate(rad, rad)
+    ctx.rotate(ang + arc / 2)
+    ctx.textAlign = 'right'
+    ctx.fillStyle = '#fff'
+    ctx.font = 'bold 25px sans-serif'
+    ctx.fillText(sector.label, rad - 10, 10)
+    //
+    ctx.restore()
+  }
+  
+  function rotate() {
+    const sector = sectors[getIndex()]
+    ctx.canvas.style.transform = `rotate(${ang - PI / 2}rad)`
+    spinEl.textContent = !angVel ? lastLabel !== ''? lastLabel : 'SPIN' : sector.label;
+  
+    if (!angVel && lastLabel !== '') {
+        setTimeout(() => {
+          spinEl.textContent = 'SPIN';
+        }, 2000);
+      }
+  
+    spinEl.style.background = sector.color;
+    lastLabel = sector.label;
+  }
+  
+  function frame() {
+    if (!angVel) return
+    angVel *= friction // Decrement velocity by friction
+    if (angVel < 0.002) angVel = 0 // Bring to stop
+    ang += angVel // Update angle
+    ang %= TAU // Normalize angle
+    rotate()
+  
+    if (angVel === 0) {
+        // The spin has stopped, you can access the last displayed label here
+        var spinDiv = document.getElementById("spin-pimpMyWolt");
+        spinDiv.textContent = lastLabel;
+        spinDiv.setAttribute('data-last-label', lastLabel);
+        
+        var orderBtn = document.getElementById("order-btn-pimpMyWolt");
+        orderBtn.classList.remove("disabled-pimpMyWolt");
+
+        publishSpinCategory({category: lastLabel})
+    }
+  }
+  
+  function engine() {
+    frame()
+    requestAnimationFrame(engine)
+  }
+  const rand = (m, M) => Math.random() * (M - m) + m;
+  const tot = sectors.length;
+  const spinEl = document.querySelector("#spin-pimpMyWolt");
+  const ctx = document.querySelector("#wheel").getContext("2d");
+  const dia = ctx.canvas.width;
+  const rad = dia / 2;
+  const PI = Math.PI;
+  const TAU = 2 * PI;
+  const arc = TAU / sectors.length;
+
+  const friction = 0.991; // 0.995=soft, 0.99=mid, 0.98=hard
+  let angVel = 0; // Angular velocity
+  let ang = 0; // Angle in radians
+  let lastLabel = "";
   sectors.forEach(drawSector)
   rotate() // Initial rotation
   engine() // Start engine
@@ -92,4 +102,9 @@ function init() {
   })
 }
 
-init();
+window.pimpMyWolt = {
+  ...window.pimpMyWolt,
+  wheel: {
+    init,
+  },
+};;

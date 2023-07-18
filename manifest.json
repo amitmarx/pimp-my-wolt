@@ -4,7 +4,7 @@
     "description": "Boost wolt up 🚀",
     "manifest_version": 3,
     "permissions": [
-      "storage", "tabs"
+      "storage"
     ],
     "options_ui": {
       "page": "/src/set-team-page.html",
@@ -14,12 +14,14 @@
       {
         "css": [
           "/src/styles.css",
-          "/src/ext/micromodal.css"
+          "/src/ext/micromodal.css",
+          "/src/wheel/wheelstyle.css"
         ],
         "js": [
           "/src/ext/micromodal.min.js",
           "/src/group-manager.js",
           "/src/bi-logger.js",
+          "/src/wheel/wheel-index.js",
           "/src/pimp-my-wolt.js"
         ],
         "matches": ["https://wolt.com/*"]

@@ -2,13 +2,14 @@
   display: inline-block;
   position: relative;
   overflow: hidden;
+  margin: 10px 0 10px 0;
 }
 
 #wheel {
   display: block;
 }
 
-#spin {
+#spin-pimpMyWolt {
   font: 1.5em/0 sans-serif;
   user-select: none;
   cursor: pointer;
@@ -28,11 +29,16 @@
   transition: 0.8s;
 }
 
-#spin::after {
+#spin-pimpMyWolt::after {
   content: '';
   position: absolute;
   top: -17px;
   border: 10px solid transparent;
   border-bottom-color: currentColor;
   border-top: none;
+}
+
+.disabled-pimpMyWolt {
+  pointer-events: none;
+  opacity: 0.5;
 }

@@ -80,7 +80,7 @@
     color: gray;
 }
 
-.wheel-button {
+.wheel-button-pimpMyWolt {
     width: 35px;
     height: 35px;
     background-origin: content-box;
@@ -90,7 +90,7 @@
     margin-right: 16px;
   }
   
-  .wheel-button:hover {
+  .wheel-button-pimpMyWolt:hover {
     transform: scale(0.9);
   }
   
