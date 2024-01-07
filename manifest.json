@@ -38,7 +38,8 @@
         "/src/pimp-my-cibus.js"
       ],
       "matches": [
-        "https://www.mysodexo.co.il/*"
+        "https://www.mysodexo.co.il/*",
+        "https://myconsumers.pluxee.co.il/*"
       ],
       "all_frames": true,
       "match_about_blank": true
