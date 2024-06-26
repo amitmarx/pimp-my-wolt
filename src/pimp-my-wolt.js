@@ -290,7 +290,7 @@
         <main id="modal-member-setup-content">
         <p>
         Please type <b><span id="add-member-name-pimpMyWolt"/></b> name on cibus.<br/>
-        Cibus name may be found <a href="https://www.mysodexo.co.il/new_my/new_my_friends.aspx" target="_blank">here</a>.
+        Cibus name may be found <a href="https://consumers.pluxee.co.il/user/friends" target="_blank">here</a>.
         </p>
           <p>
             <input id="pimp_my_wolt__cibus_name" class="pimp_my_wolt__input"/>
