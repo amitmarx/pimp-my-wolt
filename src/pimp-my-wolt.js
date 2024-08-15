@@ -6,6 +6,23 @@
   const { groupManager, biLogger, wheel } = window.pimpMyWolt;
   const { MicroModal } = window;
 
+  const isHebrewWolt = window.location.href.toLowerCase().includes("com/he/");
+  
+  const getCurrentLangugue = (english, hebrew) => isHebrewWolt ? hebrew : english
+  
+  const texts = {
+    suggestedGuestsText: getCurrentLangugue("Suggested guests" , "אנשים שאולי ירצו להזמין איתך"),
+    readyText: getCurrentLangugue("Ready", "מוכן"),
+    inviteAllInGroup: (groupName) => getCurrentLangugue(`Invite ${groupName}`, `הזמן את ${groupName}`),
+    addGroup: getCurrentLangugue("Add Group" , "הוסף קבוצה"),
+    wheelButtonTooltip: getCurrentLangugue("Don't know what to order yet?", "לא יודעים מה להזמין עדיין?"),
+    orderSubtotalPrice: getCurrentLangugue("subtotal", "סכום ההזמנה"),
+    orderDeliveryPrice: getCurrentLangugue("Delivery", "משלוח"),
+    orderSmallFeePrice: getCurrentLangugue("Small order fee", "תוספת מחיר להזמנה קטנה מדי" ),
+    orderTipPrice: getCurrentLangugue("tip", "טיפ לשליח"),
+    orderServiceFeePrice: getCurrentLangugue("Service fee", "דמי תפעול")
+  }
+
   let allGuests;
   function refreshAllGuests() {
     allGuests = groupManager.getAllGuests();
@@ -15,8 +32,7 @@
   let memberWoltId = "";
 
   const buttonSettings = {
-    id: "invite-group-button-pimpMyWolt",
-    text: "Invite Noname",
+    id: "invite-group-button-pimpMyWolt"
   };
 
   const wheelButtonSettings = {
@@ -27,17 +43,10 @@
     saveOrdersAttribute: "save-orders",
   };
 
-  const isHebrewWolt = window.location.href.toLowerCase().includes("com/he/");
-  const suggestedGuestsText = isHebrewWolt
-    ? "אנשים שאולי ירצו להזמין איתך"
-    : "Suggested guests";
-  const readyText = isHebrewWolt ? "מוכן" : "Ready";
-  const totalText = isHebrewWolt ? 'סה"כ' : "Total";
-
   const isInInviteGroupPage = () =>
-    Boolean(getElementWithText("h3", suggestedGuestsText));
+    Boolean(getElementWithText("h3", texts.suggestedGuestsText));
   const isParticipantTableExists = () =>
-    Boolean(getElementWithText("li", readyText));
+    Boolean(getElementWithText("li", texts.readyText));
   const isInviteGroupButtonExists = () =>
     Boolean(document.getElementById(buttonSettings.id));
   const isOrderButtonExists = () =>
@@ -56,17 +65,19 @@
       "true"
     );
   };
-  
+
   async function publishWheelOfLuckModalOpen() {
     biLogger.logEvent("wheel_of_luck_modal_open", {});
   }
-  async function publishWheelOfLuckCategoryOpen({category}) {
+  async function publishWheelOfLuckCategoryOpen({ category }) {
     biLogger.logEvent("wheel_of_luck_category_open", { category });
   }
 
-  function getElementsWithText(element, text) {
+  function getElementsWithText(element, text, deepest = false) {
     const result = [];
-    const xpath = `//${element}[.//*[contains(text(), '${text}')]]`;
+    const xpath = deepest
+      ? `//${element}[contains(text(), '${text}')]`
+      : `//${element}[.//*[contains(text(), '${text}')]]`;
     const generator = document.evaluate(
       xpath,
       document,
@@ -82,12 +93,11 @@
     return result;
   }
 
-  function getElementWithText(element, text) {
-    return getElementsWithText(element, text)[0];
+  function getElementWithText(element, text, deepest = false) {
+    return getElementsWithText(element, text, deepest)[0];
   }
 
   function getInviteAllBtn(teamName) {
-    const text = isHebrewWolt ? `הזמן את ${teamName}` : `Invite ${teamName}`;
 
     const onclick = async () => {
       const { invitedGuests, notInvitedGuests } = await inviteAllGuests();
@@ -98,15 +108,14 @@
       });
     };
     return {
-      text,
+      text: texts.inviteAllInGroup(teamName),
       onclick,
     };
   }
 
   function getSetupYourTeamBtnProps() {
-    const text = isHebrewWolt ? "הוסף קבוצה" : "Add Group";
     const onclick = () => MicroModal.show("modal-add-group");
-    return { text, onclick };
+    return { text: texts.addGroup, onclick };
   }
 
   async function getBtn() {
@@ -144,41 +153,32 @@
     const btn = await getBtn();
     const suggestedGuestsElement = getElementWithText(
       "h3",
-      suggestedGuestsText
+      texts.suggestedGuestsText
     );
     suggestedGuestsElement.appendChild(btn);
   }
 
   function getRestuarant() {
-    const location = document?.location?.pathname;
-    const regex = /restaurant\/(.*)\//gm;
-    const restaurant = location?.matchAll(regex)?.next()?.value?.[1];
-    return restaurant;
+    const title = document.querySelector('meta[name="title"]')?.getAttribute("content")
+    const restuarant = title.split('|')?.[1]?.trim()
+    return restuarant;
   }
 
   function getTotalOrderPrice() {
     const subtotal = priceToNumber(
-      document
-        .querySelector('[data-test-id="Order.Subtotal"]')
-        ?.querySelector("dd")?.innerText
+      getElementWithText('dt', texts.orderSubtotalPrice, true)?.parentNode?.querySelector('dd div')?.innerText
     );
     const delivery = priceToNumber(
-      document.querySelector('[data-test-id="order.checkout-delivery-default"]')
-        ?.innerText
+      getElementWithText('dt', texts.orderDeliveryPrice, true)?.parentNode?.querySelector('dd div:last-of-type')?.innerText
     );
     const smallOrderFee = priceToNumber(
-      document
-        .querySelector('[data-test-id="Order.SmallOrderFee"]')
-        ?.querySelector("dd")?.innerText
+      getElementWithText('dt', texts.orderSmallFeePrice, true)?.parentNode?.querySelector('dd div')?.innerText
     );
     const tip = priceToNumber(
-      document.querySelector('[data-test-id="OrderSummary.tipAmount"]')
-        ?.innerText
+      getElementWithText('dt', texts.orderTipPrice, true)?.parentNode?.querySelector('dd div')?.innerText
     );
     const serviceFee = priceToNumber(
-      document
-        .querySelector('[data-test-id="Order.ServiceFee"]')
-        ?.querySelector("dd")?.innerText
+      getElementWithText('dt', texts.orderServiceFeePrice, true)?.parentNode?.querySelector('dd div')?.innerText
     );
 
     return subtotal + delivery + smallOrderFee + tip + serviceFee;
@@ -235,7 +235,7 @@
   }
 
   function getGuestsOrders() {
-    const guestsLineItems = getElementsWithText("li", readyText);
+    const guestsLineItems = getElementsWithText("li", texts.readyText);
 
     return guestsLineItems
       .map((item) => {
@@ -417,7 +417,7 @@
 
   async function addActionBtnNextToMembers() {
     const guests = await allGuests;
-    const itemsInList = getElementsWithText("li", readyText);
+    const itemsInList = getElementsWithText("li", texts.readyText);
 
     for (const itemInList of itemsInList) {
       itemInList.classList.add("participant-pimpMyWolt");
@@ -448,10 +448,7 @@
     btnDiv.style.backgroundImage = "url('" + src + "')";
     btnDiv.classList.add(wheelButtonSettings.id, "brand_item", "hover_btn");
 
-    const tooltipText = isHebrewWolt
-      ? `לא יודעים מה להזמין עדיין?`
-      : `Don't know what to order yet?`;
-    btnDiv.setAttribute("data-tooltip", tooltipText);
+    btnDiv.setAttribute("data-tooltip", texts.wheelButtonTooltip);
 
     btnDiv.onclick = () => {
       MicroModal.show("modal-random");
@@ -469,7 +466,7 @@
     const profileImageDiv = profileImageButton?.parentElement;
     return profileImageDiv?.parentElement;
   }
-  
+
   function getWoltMainBarForLoggedOutUser() {
     const signupButton = document.querySelector(
       '[data-test-id="UserStatus.Signup"]'
@@ -507,7 +504,7 @@
 
       const modalContainer = document.createElement("div");
       modalContainer.innerHTML = modalDiv;
-      
+
       document.querySelector("body").appendChild(modalContainer);
       wheel.init();
 
@@ -515,14 +512,15 @@
         const text = document
           .getElementById("spin-pimpMyWolt")
           .getAttribute("data-last-label");
-        const linkRef = isHebrewWolt
-          ? `https://wolt.com/he/search?q=${text}`
-          : `https://wolt.com/en/search?q=${text}`;
-          publishWheelOfLuckCategoryOpen({category: text})
+        const linkRef = getCurrentLangugue(
+          `https://wolt.com/en/search?q=${text}`,
+          `https://wolt.com/he/search?q=${text}`
+        );
+        publishWheelOfLuckCategoryOpen({ category: text });
         window.open(linkRef, "_blank");
         MicroModal.close();
       };
-      
+
       document.getElementById("order-btn-pimpMyWolt").onclick = onClick;
     }
   }
