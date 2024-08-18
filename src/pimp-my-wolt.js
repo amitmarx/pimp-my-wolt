@@ -11,7 +11,7 @@
   const getCurrentLangugue = (english, hebrew) => isHebrewWolt ? hebrew : english
   
   const texts = {
-    suggestedGuestsText: getCurrentLangugue("Suggested guests" , "אנשים שאולי ירצו להזמין איתך"),
+    suggestedGuestsText: getCurrentLangugue("Suggested people" , "אנשים שאולי ירצו להזמין איתך"),
     readyText: getCurrentLangugue("Ready", "מוכן"),
     inviteAllInGroup: (groupName) => getCurrentLangugue(`Invite ${groupName}`, `הזמן את ${groupName}`),
     addGroup: getCurrentLangugue("Add Group" , "הוסף קבוצה"),
@@ -50,7 +50,7 @@
   const isInviteGroupButtonExists = () =>
     Boolean(document.getElementById(buttonSettings.id));
   const isOrderButtonExists = () =>
-    Boolean(document.querySelector('[data-test-id="SendOrderButton"]'));
+    Boolean(document.querySelector('[data-test-id="BackendPricing.SendOrderButton"]'));
 
   const isWheelButtonExists = () =>
     Boolean(document.getElementById(wheelButtonSettings.id));
@@ -58,7 +58,7 @@
     Boolean(window.location.href.toLowerCase().includes("discovery"));
   const isOrderButtonUpdated = () => {
     const orderButton = document.querySelector(
-      '[data-test-id="SendOrderButton"]'
+      '[data-test-id="BackendPricing.SendOrderButton"]'
     );
     return (
       orderButton.getAttribute(orderButtonHookSettings.saveOrdersAttribute) ===
