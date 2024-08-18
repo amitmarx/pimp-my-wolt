@@ -256,7 +256,7 @@
 
   function updateOrderButtonToSaveGuestsOrders() {
     const sendOrderButton = document.querySelector(
-      '[data-test-id="SendOrderButton"]'
+      '[data-test-id="BackendPricing.SendOrderButton"]'
     );
     sendOrderButton.onclick = () => {
       const totalOrderPrice = getTotalOrderPrice();
