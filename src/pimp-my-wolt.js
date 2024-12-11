@@ -50,7 +50,7 @@
   const isInviteGroupButtonExists = () =>
     Boolean(document.getElementById(buttonSettings.id));
   const isOrderButtonExists = () =>
-    Boolean(document.querySelector('[data-test-id="BackendPricing.SendOrderButton"]'));
+    Boolean(document.querySelector('[data-test-id="SendOrderButton"]'));
 
   const isWheelButtonExists = () =>
     Boolean(document.getElementById(wheelButtonSettings.id));
@@ -58,7 +58,7 @@
     Boolean(window.location.href.toLowerCase().includes("discovery"));
   const isOrderButtonUpdated = () => {
     const orderButton = document.querySelector(
-      '[data-test-id="BackendPricing.SendOrderButton"]'
+      '[data-test-id="SendOrderButton"]'
     );
     return (
       orderButton.getAttribute(orderButtonHookSettings.saveOrdersAttribute) ===
@@ -256,7 +256,7 @@
 
   function updateOrderButtonToSaveGuestsOrders() {
     const sendOrderButton = document.querySelector(
-      '[data-test-id="BackendPricing.SendOrderButton"]'
+      '[data-test-id="SendOrderButton"]'
     );
     sendOrderButton.onclick = () => {
       const totalOrderPrice = getTotalOrderPrice();
