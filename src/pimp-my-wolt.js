@@ -12,7 +12,7 @@
   
   const texts = {
     suggestedGuestsText: getCurrentLangugue("Suggested people" , "אנשים שאולי ירצו להזמין איתך"),
-    readyText: getCurrentLangugue("Ready", "מוכן"),
+    readyText: getCurrentLangugue("Ready", "מוכנ/ה"),
     inviteAllInGroup: (groupName) => getCurrentLangugue(`Invite ${groupName}`, `הזמן את ${groupName}`),
     addGroup: getCurrentLangugue("Add Group" , "הוסף קבוצה"),
     wheelButtonTooltip: getCurrentLangugue("Don't know what to order yet?", "לא יודעים מה להזמין עדיין?"),
